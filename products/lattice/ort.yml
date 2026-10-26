@@ -11,6 +11,11 @@ excludes:
   - pattern: "utils/**"
     reason: "BUILD_TOOL_OF"
     comment: "Small Rust helpers for the build (build number, changelog); not part of any installer."
+  # ORT finds package managers by itself (scan.yml); without this its
+  # GitHubAction manager would list the CI's actions as packages.
+  - pattern: ".github/**"
+    reason: "BUILD_TOOL_OF"
+    comment: "CI workflows and the GitHub Actions they use; not part of any installer."
   scopes:
   # Pattern is a regular expression on the scope name: npm "devDependencies"
   # and Cargo "dev-dependencies".

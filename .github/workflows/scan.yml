@@ -1,0 +1,411 @@
+# LEGAL NOTE:
+# LEGATTICE (tm) - FOSS scans and the ledger of what they leave open
+# Copyright (C) 2026 Owner of blessini.com (a.k.a Blessia)
+# email: blessia AT blessini.com
+#
+# GNU AFFERO GENERAL PUBLIC LICENSE V3 NOTICE:
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# See LICENSE file in GitHub root folder of the repository.
+# END OF NOTE
+
+################################################################
+# SCAN (ORT), in parallel
+#   broker  -- finds the package managers (ORT dry run; none is
+#              assumed), analyzes each one, cuts the scan into
+#              work units, estimates each (earlier runs, archive
+#              size) and packs them into at most `shards` jobs of
+#              nearly equal length
+#   shard   -- N jobs at once; each runs ORT's scan on its units
+#              only and hands on the results it made
+#   merge   -- one ORT scan per manager over all stored results
+#              (scans itself whatever a shard did not deliver),
+#              records the times for the next plan, writes the
+#              reports
+#   How it works, in plain words: docs/scan.md.
+#
+#   ORT is a separate program (Apache-2.0), run from its container
+#   image pinned by digest; nothing of ORT becomes part of Legattice.
+#   Node runs Legattice's own steps (src/scan/, built-ins only).
+################################################################
+name: Scan (ORT)
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'Public repository to scan (owner/name)'
+        required: true
+        default: 'blessia-blessini/lattice'
+      ref:
+        description: 'Tag, branch or commit'
+        required: true
+        default: 'v0.3.50'
+      repository_config:
+        description: 'ORT repository configuration in this repo (what is not shipped); empty for none'
+        required: false
+        default: 'products/lattice/ort.yml'
+      package_managers:
+        description: 'Empty: let ORT find them. Or a comma-separated list, e.g. Cargo,NPM'
+        required: false
+        default: ''
+      shards:
+        description: 'Most scan jobs running at once (1-18; GitHub runs 20 jobs at once, leave room for a second run)'
+        required: true
+        default: '16'
+      scan:
+        description: 'Scan the sources with ScanCode (off: analyzer and reports only)'
+        type: boolean
+        default: true
+
+env:
+  # ORT 97.2.0, image "run" (all tools, ScanCode included). Update both together.
+  ORT_IMAGE: ghcr.io/oss-review-toolkit/ort@sha256:4095b20baea5f51e60d38d841ca3e60faae828aff5f74ae3ce213aa223948230
+  ORT_VERSION: '97.2.0'
+  NODE_VERSION: '24'
+  # The container runs as user "ort" (uid 1000), the runner as uid 1001:
+  # every folder the container writes to is made writable for it first.
+  ORT: docker run --rm -v ${{ github.workspace }}:/work
+
+jobs:
+  ################################################################
+  # BROKER
+  ################################################################
+  broker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      shards: ${{ steps.plan.outputs.shards }}
+    steps:
+    - name: 100. Check out the product
+      uses: actions/checkout@v6
+      with:
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.ref }}
+        path: product
+        persist-credentials: false
+
+    - name: 101. Check out Legattice
+      uses: actions/checkout@v6
+      with:
+        path: legattice
+        persist-credentials: false
+
+    - name: 102. Set up Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: 110. Prepare ORT
+      shell: bash
+      env:
+        REPOSITORY_CONFIG: ${{ inputs.repository_config }}
+        SHARDS: ${{ inputs.shards }}
+      run: |
+        set -euo pipefail
+        [[ "$SHARDS" =~ ^[0-9]+$ ]] && [ "$SHARDS" -ge 1 ] && [ "$SHARDS" -le 18 ] \
+          || { echo "::error::shards must be a number from 1 to 18, not '$SHARDS'"; exit 1; }
+        mkdir -p out
+        node legattice/src/scan/cli.mjs config --out out/config.yml
+        repo_config_arg=""
+        if [ -n "$REPOSITORY_CONFIG" ]; then
+          test -f "legattice/$REPOSITORY_CONFIG" || { echo "::error::legattice/$REPOSITORY_CONFIG not found"; exit 1; }
+          cp "legattice/$REPOSITORY_CONFIG" out/repository-config.yml
+          repo_config_arg="--repository-configuration-file /work/out/repository-config.yml"
+          cat out/repository-config.yml
+        fi
+        echo "REPO_CONFIG_ARG=$repo_config_arg" >> "$GITHUB_ENV"
+        chmod -R a+rwX product out
+        docker pull --quiet "$ORT_IMAGE"
+
+    # ORT's own search for definition files (Cargo.toml, package.json,
+    # conanfile, SPDX documents, ...) with the product's excludes; files no
+    # package manager owns go to the "Unmanaged" project.
+    - name: 120. Find the package managers
+      shell: bash
+      env:
+        PACKAGE_MANAGERS: ${{ inputs.package_managers }}
+      run: |
+        set -euo pipefail
+        if [ -n "$PACKAGE_MANAGERS" ]; then
+          node legattice/src/scan/cli.mjs managers --list "$PACKAGE_MANAGERS" --out out/managers.txt
+        else
+          # REPO_CONFIG_ARG is empty or one fixed option with a fixed path (step 110).
+          $ORT "$ORT_IMAGE" -c /work/out/config.yml \
+            analyze -i /work/product --dry-run $REPO_CONFIG_ARG | tee out/dry-run.txt
+          node legattice/src/scan/cli.mjs managers --dry-run out/dry-run.txt --out out/managers.txt
+        fi
+
+    # One analysis per package manager: ORT mixes up projects of the same
+    # name and version from two managers (Lattice: Cargo and npm "lattice").
+    - name: 130. Analyze, once per package manager
+      shell: bash
+      run: |
+        set -euo pipefail
+        while read -r manager; do
+          echo "::group::Analyze $manager"
+          node legattice/src/scan/cli.mjs config --manager "$manager" --out "out/config-$manager.yml"
+          chmod a+r "out/config-$manager.yml"
+          $ORT "$ORT_IMAGE" --info -c "/work/out/config-$manager.yml" \
+            analyze -i /work/product -o "/work/out/analyzer/$manager" -f JSON $REPO_CONFIG_ARG
+          echo "::endgroup::"
+        done < out/managers.txt
+
+    # Times of earlier scans: what is already stored, how fast each package
+    # type scans. Small, so the broker does not restore the stored results.
+    - name: 135. Restore earlier scan times
+      uses: actions/cache/restore@v5
+      with:
+        path: timings
+        key: ort-timings-${{ env.ORT_VERSION }}-${{ github.run_id }}
+        restore-keys: ort-timings-${{ env.ORT_VERSION }}-
+
+    - name: 140. Plan the shards
+      id: plan
+      shell: bash
+      env:
+        SHARDS: ${{ inputs.shards }}
+      run: |
+        set -euo pipefail
+        node legattice/src/scan/cli.mjs plan --analyzer-dir out/analyzer --managers out/managers.txt \
+          --timings timings/timings.json --max-shards "$SHARDS" --out out/plan.json
+
+    - name: 150. Hand the plan to the shards
+      uses: actions/upload-artifact@v7
+      with:
+        name: plan
+        path: out/
+        retention-days: 7
+        if-no-files-found: error
+
+  ################################################################
+  # SHARDS
+  ################################################################
+  shard:
+    needs: broker
+    if: inputs.scan && needs.broker.outputs.shards != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.broker.outputs.shards) }}
+    name: shard ${{ matrix.shard }}
+    steps:
+    - name: 100. Check out Legattice
+      uses: actions/checkout@v6
+      with:
+        path: legattice
+        persist-credentials: false
+
+    - name: 101. Set up Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: 110. Get the plan
+      uses: actions/download-artifact@v8
+      with:
+        name: plan
+        path: out
+
+    # Results of earlier runs: a unit already scanned is a lookup.
+    - name: 115. Restore earlier scan results
+      uses: actions/cache/restore@v5
+      with:
+        path: cache
+        key: ort-scan-${{ env.ORT_VERSION }}-${{ github.run_id }}
+        restore-keys: ort-scan-${{ env.ORT_VERSION }}-
+
+    # The marker separates what this shard makes from what it restored:
+    # only new files are handed on (step 140).
+    - name: 120. Prepare the shard
+      shell: bash
+      env:
+        SHARD: ${{ matrix.shard }}
+      run: |
+        set -euo pipefail
+        mkdir -p cache shard
+        touch shard-start.marker
+        node legattice/src/scan/cli.mjs shard --plan out/plan.json --index "$SHARD" \
+          --analyzer-dir out/analyzer --out-dir shard
+        chmod -R a+rwX out cache shard
+        docker pull --quiet "$ORT_IMAGE"
+
+    # Its own limit, below the job's 350 minutes: when it is reached, the
+    # steps below still hand on what was scanned so far.
+    - name: 130. Scan (ScanCode)
+      timeout-minutes: 320
+      shell: bash
+      run: |
+        set -uo pipefail
+        failed=0
+        while IFS=$'\t' read -r manager types; do
+          echo "::group::Scan $manager ($types)"
+          $ORT "$ORT_IMAGE" --info -c /work/out/config.yml \
+            scan -i "/work/shard/$manager.json" -o "/work/out/scanner/$manager" -f JSON --package-types "$types" \
+            || { echo "::error::scan of $manager failed"; failed=1; }
+          echo "::endgroup::"
+        done < shard/runs.tsv
+        exit $failed
+
+    - name: 140. Collect the new results
+      if: always()
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p new-results
+        (cd cache && find . -type f -newer ../shard-start.marker -print0 | xargs -0 -r cp --parents -t ../new-results)
+        echo "$(find new-results -type f | wc -l) new file(s), $(du -sh new-results | cut -f1)"
+
+    - name: 150. Hand on the new results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: shard-${{ matrix.shard }}
+        path: new-results/
+        retention-days: 1
+        include-hidden-files: true
+        if-no-files-found: ignore
+
+  ################################################################
+  # MERGE
+  ################################################################
+  merge:
+    needs: [broker, shard]
+    # Also when shards failed or were skipped: what they did not deliver
+    # is scanned here.
+    if: ${{ !cancelled() && needs.broker.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+    - name: 100. Check out Legattice
+      uses: actions/checkout@v6
+      with:
+        path: legattice
+        persist-credentials: false
+
+    - name: 101. Set up Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: 110. Get the plan
+      uses: actions/download-artifact@v8
+      with:
+        name: plan
+        path: out
+
+    - name: 114. Restore earlier scan times
+      if: inputs.scan
+      uses: actions/cache/restore@v5
+      with:
+        path: timings
+        key: ort-timings-${{ env.ORT_VERSION }}-${{ github.run_id }}
+        restore-keys: ort-timings-${{ env.ORT_VERSION }}-
+
+    - name: 115. Restore earlier scan results
+      if: inputs.scan
+      uses: actions/cache/restore@v5
+      with:
+        path: cache
+        key: ort-scan-${{ env.ORT_VERSION }}-${{ github.run_id }}
+        restore-keys: ort-scan-${{ env.ORT_VERSION }}-
+
+    # Missing shard results are no error here: step 130 scans them.
+    - name: 116. Add the shards' results
+      if: inputs.scan
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        pattern: shard-*
+        path: cache
+        merge-multiple: true
+
+    - name: 120. Prepare ORT
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p cache
+        chmod -R a+rwX out cache
+        docker pull --quiet "$ORT_IMAGE"
+
+    - name: 130. Scan from the stored results
+      if: inputs.scan
+      timeout-minutes: 320
+      shell: bash
+      run: |
+        set -uo pipefail
+        failed=0
+        while read -r manager; do
+          echo "::group::Scan $manager"
+          $ORT "$ORT_IMAGE" --info -c /work/out/config.yml \
+            scan -i "/work/out/analyzer/$manager/analyzer-result.json" -o "/work/out/scanner/$manager" -f JSON \
+            || { echo "::error::scan of $manager failed"; failed=1; }
+          echo "::endgroup::"
+        done < out/managers.txt
+        exit $failed
+
+    - name: 135. Record the scan times
+      if: inputs.scan
+      shell: bash
+      run: |
+        set -euo pipefail
+        node legattice/src/scan/cli.mjs timings --scanner-dir out/scanner --managers out/managers.txt \
+          --plan out/plan.json --timings timings/timings.json --out timings/timings.json
+
+    # Also after a failed or cut-off scan: what was stored is not lost.
+    - name: 136. Save the scan results for the next run
+      if: always() && inputs.scan
+      uses: actions/cache/save@v5
+      with:
+        path: cache
+        key: ort-scan-${{ env.ORT_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: 137. Save the scan times for the next plan
+      if: inputs.scan
+      uses: actions/cache/save@v5
+      with:
+        path: timings
+        key: ort-timings-${{ env.ORT_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+    # Also after a failed scan: then from the analyzer result.
+    - name: 140. Report
+      if: success() || failure()
+      shell: bash
+      run: |
+        set -uo pipefail
+        failed=0
+        while read -r manager; do
+          input="out/analyzer/$manager/analyzer-result.json"
+          [ -f "out/scanner/$manager/scan-result.json" ] && input="out/scanner/$manager/scan-result.json"
+          echo "::group::Report $manager (from $input)"
+          $ORT "$ORT_IMAGE" --info -c /work/out/config.yml \
+            report -i "/work/$input" -o "/work/out/report/$manager" -f CycloneDX,PlainTextTemplate,WebApp \
+            || { echo "::error::report of $manager failed"; failed=1; }
+          echo "::endgroup::"
+        done < out/managers.txt
+        exit $failed
+
+    - name: 150. Upload the results
+      if: success() || failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: ort-${{ env.ORT_VERSION }}-results
+        path: out/
+        if-no-files-found: warn

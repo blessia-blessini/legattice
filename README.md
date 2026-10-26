@@ -14,8 +14,9 @@ The scanning itself is done by existing open-source tools — the
 [ScanCode](https://github.com/aboutcode-org/scancode-toolkit), run as separate programs. Legattice
 adds the part around them: the product definition, the ledger of decisions, and the follow-up.
 
-> **Status:** early — nothing to install yet. The first step is a trial run of ORT and ScanCode
-> on a real product.
+> **Status:** early — nothing to install yet. What runs today is the scan: the workflow
+> **Scan (ORT)** finds a product's package managers by itself and spreads the ScanCode work over
+> many jobs at once ([how it works](docs/scan.md)).
 >
 > Legattice reports what the tools find and what people decided. It does not give legal advice;
 > licence decisions stay with a qualified person.

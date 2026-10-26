@@ -1,0 +1,14 @@
+{
+  "name": "legattice",
+  "version": "0.0.1",
+  "private": true,
+  "description": "FOSS scans and the ledger of what they leave open",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
