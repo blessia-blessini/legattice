@@ -1,0 +1,19 @@
+# ORT repository configuration for Lattice (blessia-blessini/lattice).
+# Passed to "ort analyze --repository-configuration-file", so Lattice's own
+# repository needs no .ort.yml. Together with "skipExcluded: true" the
+# analyzer does not even resolve what is excluded here.
+#
+# Excluded = not shipped in Lattice's installers. Kept: everything the app
+# links or bundles, and Cargo build-dependencies (they run while the app is
+# built, and Lattice's own licence gate counts them as shipped too).
+excludes:
+  paths:
+  - pattern: "utils/**"
+    reason: "BUILD_TOOL_OF"
+    comment: "Small Rust helpers for the build (build number, changelog); not part of any installer."
+  scopes:
+  # Pattern is a regular expression on the scope name: npm "devDependencies"
+  # and Cargo "dev-dependencies".
+  - pattern: "(?i)dev[_-]?dependencies"
+    reason: "DEV_DEPENDENCY_OF"
+    comment: "Development and test tools only; never shipped."

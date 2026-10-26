@@ -53,6 +53,10 @@ on:
         description: 'ORT package managers to enable (comma-separated)'
         required: true
         default: 'Cargo,NPM'
+      repository_config:
+        description: 'ORT repository configuration in this repo (what is not shipped); empty for none'
+        required: false
+        default: 'products/lattice/ort.yml'
       scan:
         description: 'Also run ScanCode over every package (slow)'
         type: boolean
@@ -76,12 +80,26 @@ jobs:
         path: product
         persist-credentials: false
 
-    # The image runs as user "ort" (uid 1000); the runner's workspace
-    # belongs to uid 1001, so the container gets a writable work folder.
+    # Legattice itself, for the product's repository configuration.
+    - name: 101. Check out Legattice
+      uses: actions/checkout@v6
+      with:
+        path: legattice
+        persist-credentials: false
+
+    ################################################################
+    # 110 / ORT configuration. skipExcluded: what the repository
+    #       configuration excludes (paths, scopes) is not resolved
+    #       at all -- the first trial run failed on an unshipped
+    #       helper crate under utils/ that ORT could not resolve.
+    #       The image runs as user "ort" (uid 1000); the runner's
+    #       workspace belongs to uid 1001, so it is made writable.
+    ################################################################
     - name: 110. Prepare ORT
       shell: bash
       env:
         PACKAGE_MANAGERS: ${{ inputs.package_managers }}
+        REPOSITORY_CONFIG: ${{ inputs.repository_config }}
       run: |
         set -euo pipefail
         mkdir -p out
@@ -89,8 +107,19 @@ jobs:
           echo 'ort:'
           echo '  analyzer:'
           echo "    enabledPackageManagers: [${PACKAGE_MANAGERS}]"
+          echo '    skipExcluded: true'
+          echo '  scanner:'
+          echo '    skipExcluded: true'
         } > out/config.yml
         cat out/config.yml
+        repo_config_arg=""
+        if [ -n "$REPOSITORY_CONFIG" ]; then
+          test -f "legattice/$REPOSITORY_CONFIG" || { echo "::error::legattice/$REPOSITORY_CONFIG not found"; exit 1; }
+          cp "legattice/$REPOSITORY_CONFIG" out/repository-config.yml
+          repo_config_arg="--repository-configuration-file /work/out/repository-config.yml"
+          cat out/repository-config.yml
+        fi
+        echo "REPO_CONFIG_ARG=$repo_config_arg" >> "$GITHUB_ENV"
         chmod -R a+rwX product out
         docker pull --quiet "$ORT_IMAGE"
 
@@ -98,8 +127,9 @@ jobs:
       shell: bash
       run: |
         set -euo pipefail
+        # REPO_CONFIG_ARG is empty or one fixed option with a fixed path (step 110).
         docker run --rm -v "$PWD:/work" "$ORT_IMAGE" --info -c /work/out/config.yml \
-          analyze -i /work/product -o /work/out/analyzer -f JSON
+          analyze -i /work/product -o /work/out/analyzer -f JSON $REPO_CONFIG_ARG
 
     - name: 130. Scan (ScanCode)
       if: inputs.scan
