@@ -145,14 +145,37 @@ jobs:
         set -euo pipefail
         [[ "$MANAGER" =~ ^[A-Za-z0-9]+$ ]] || { echo "::error::bad package manager name"; exit 1; }
         mkdir -p out
+        # downloader.sourceCodeOrigins: scan the published package archive
+        #   (crate, npm tarball) -- what actually ships -- and fall back to
+        #   the Git repository only without one. ORT's default prefers the
+        #   repository and cloned all of tokio for one crate (run 40342748250).
+        # ScanCode --processes 4: the runner has 4 cores; without it ScanCode
+        #   used one. "NonConfig" options do not change the findings.
+        # storages: every scan result is written to cache/ as it is made, and
+        #   cache/ survives runs (steps 115, 135), so a cut-off run resumes.
         {
           echo 'ort:'
           echo '  analyzer:'
           echo "    enabledPackageManagers: [${MANAGER}]"
           echo '    skipExcluded: true'
+          echo '  downloader:'
+          echo '    sourceCodeOrigins: [ARTIFACT, VCS]'
           echo '  scanner:'
           echo '    skipExcluded: true'
+          echo '    config:'
+          echo '      ScanCode:'
+          echo '        options:'
+          echo "          commandLineNonConfig: '--processes,4'"
+          echo '    storages:'
+          echo '      local:'
+          echo '        backend:'
+          echo '          localFileStorage:'
+          echo '            directory: /work/cache/scan-results'
+          echo '            compression: false'
+          echo '    storageReaders: [local]'
+          echo '    storageWriters: [local]'
         } > out/config.yml
+        mkdir -p cache/scan-results
         cat out/config.yml
         repo_config_arg=""
         if [ -n "$REPOSITORY_CONFIG" ]; then
@@ -162,8 +185,22 @@ jobs:
           cat out/repository-config.yml
         fi
         echo "REPO_CONFIG_ARG=$repo_config_arg" >> "$GITHUB_ENV"
-        chmod -R a+rwX product out
+        chmod -R a+rwX product out cache
         docker pull --quiet "$ORT_IMAGE"
+
+    # Scan results of earlier runs (same manager, same ORT version): packages
+    # already scanned are skipped. The newest run's cache wins.
+    - name: 115. Restore earlier scan results
+      if: inputs.scan
+      uses: actions/cache/restore@v5
+      with:
+        path: cache/scan-results
+        key: ort-scan-${{ env.ORT_VERSION }}-${{ matrix.manager }}-${{ github.run_id }}
+        restore-keys: ort-scan-${{ env.ORT_VERSION }}-${{ matrix.manager }}-
+
+    - name: 116. Make restored results writable
+      if: inputs.scan
+      run: chmod -R a+rwX cache
 
     - name: 120. Analyze
       shell: bash
@@ -173,13 +210,23 @@ jobs:
         docker run --rm -v "$PWD:/work" "$ORT_IMAGE" --info -c /work/out/config.yml \
           analyze -i /work/product -o /work/out/analyzer -f JSON $REPO_CONFIG_ARG
 
+    # Its own limit, below the job's 350 minutes: when it is reached, the
+    # steps below still save the partial results and upload the logs.
     - name: 130. Scan (ScanCode)
       if: inputs.scan
+      timeout-minutes: 320
       shell: bash
       run: |
         set -euo pipefail
         docker run --rm -v "$PWD:/work" "$ORT_IMAGE" --info -c /work/out/config.yml \
           scan -i /work/out/analyzer/analyzer-result.json -o /work/out/scanner -f JSON
+
+    - name: 135. Save scan results for the next run
+      if: always() && inputs.scan
+      uses: actions/cache/save@v5
+      with:
+        path: cache/scan-results
+        key: ort-scan-${{ env.ORT_VERSION }}-${{ matrix.manager }}-${{ github.run_id }}
 
     # Also after a failed scan: the report then comes from the analyzer
     # result. Without an analyzer result there is nothing to report.
