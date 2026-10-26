@@ -32,6 +32,14 @@
 #   ORT is a separate program (Apache-2.0), run from its container
 #   image pinned by digest, so a run is reproducible and nothing
 #   of ORT becomes part of Legattice.
+#
+#   One job per package manager, in parallel. ORT keys each scope
+#   by project name and version but not by package manager, so two
+#   projects of the same name and version (Lattice: Cargo "lattice"
+#   0.3.50 and npm "lattice" 0.3.50, both with a "dependencies"
+#   scope) collide and ORT stops ("All of the [Cargo, NPM] managers
+#   are able to manage 'Cargo' projects"). One manager per run
+#   cannot collide; each job gives its own result and SBOM.
 ################################################################
 name: Trial run (ORT)
 
@@ -50,7 +58,7 @@ on:
         required: true
         default: 'v0.3.50'
       package_managers:
-        description: 'ORT package managers to enable (comma-separated)'
+        description: 'ORT package managers, comma-separated; one job each'
         required: true
         default: 'Cargo,NPM'
       repository_config:
@@ -68,9 +76,42 @@ env:
   ORT_VERSION: '97.2.0'
 
 jobs:
+  # "Cargo, NPM" -> ["Cargo","NPM"] for the matrix of job ort.
+  managers:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.split.outputs.list }}
+    steps:
+    - name: Split the package managers
+      id: split
+      shell: bash
+      env:
+        PACKAGE_MANAGERS: ${{ inputs.package_managers }}
+      run: |
+        set -euo pipefail
+        # Plain names only (letters, digits), so the list is valid JSON as written.
+        IFS=',' read -ra parts <<< "$PACKAGE_MANAGERS"
+        items=()
+        for p in "${parts[@]}"; do
+          p="${p//[[:space:]]/}"
+          [ -n "$p" ] || continue
+          [[ "$p" =~ ^[A-Za-z0-9]+$ ]] || { echo "::error::bad package manager name: $p"; exit 1; }
+          items+=("\"$p\"")
+        done
+        [ "${#items[@]}" -gt 0 ] || { echo "::error::no package manager given"; exit 1; }
+        list="[$(IFS=,; echo "${items[*]}")]"
+        echo "list=$list" >> "$GITHUB_OUTPUT"
+        echo "$list"
+
   ort:
+    needs: managers
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        manager: ${{ fromJSON(needs.managers.outputs.list) }}
+    name: ort (${{ matrix.manager }})
     steps:
     - name: 100. Check out the product
       uses: actions/checkout@v6
@@ -98,15 +139,16 @@ jobs:
     - name: 110. Prepare ORT
       shell: bash
       env:
-        PACKAGE_MANAGERS: ${{ inputs.package_managers }}
+        MANAGER: ${{ matrix.manager }}
         REPOSITORY_CONFIG: ${{ inputs.repository_config }}
       run: |
         set -euo pipefail
+        [[ "$MANAGER" =~ ^[A-Za-z0-9]+$ ]] || { echo "::error::bad package manager name"; exit 1; }
         mkdir -p out
         {
           echo 'ort:'
           echo '  analyzer:'
-          echo "    enabledPackageManagers: [${PACKAGE_MANAGERS}]"
+          echo "    enabledPackageManagers: [${MANAGER}]"
           echo '    skipExcluded: true'
           echo '  scanner:'
           echo '    skipExcluded: true'
@@ -139,8 +181,10 @@ jobs:
         docker run --rm -v "$PWD:/work" "$ORT_IMAGE" --info -c /work/out/config.yml \
           scan -i /work/out/analyzer/analyzer-result.json -o /work/out/scanner -f JSON
 
+    # Also after a failed scan: the report then comes from the analyzer
+    # result. Without an analyzer result there is nothing to report.
     - name: 140. Report
-      if: success() || failure()
+      if: (success() || failure()) && hashFiles('out/analyzer/analyzer-result.json') != ''
       shell: bash
       run: |
         set -euo pipefail
@@ -153,6 +197,6 @@ jobs:
       if: success() || failure()
       uses: actions/upload-artifact@v7
       with:
-        name: ort-${{ env.ORT_VERSION }}-results
+        name: ort-${{ env.ORT_VERSION }}-${{ matrix.manager }}
         path: out/
         if-no-files-found: warn
