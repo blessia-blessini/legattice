@@ -15,11 +15,11 @@
     ]
   },
   "decision": {
-    "outcome": "",
-    "licence": "",
-    "rationale": "",
-    "decidedBy": "",
-    "date": "",
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "The licence file inside the parser is MIT with Copyright (c) 2023 Yokozuna59. The texts scancode caught are false positives.",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-27",
     "expires": null
   }
 }
