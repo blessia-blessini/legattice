@@ -10,7 +10,7 @@ from this tool.*
 
 ## A decision
 
-`products/lattice/ledger/LT-c95612b6e3.json`:
+`products/lattice/ledger/2-medium.open.LT-c95612b6e3.json`:
 
 ```json
 {
@@ -63,11 +63,29 @@ decision. The khroma file above is an example of the format, not a decision.
 ## How a topic is closed
 
 1. Run the scan (**Actions → Scan (ORT)**). The merge job's summary lists the topics; the results
-   artifact holds `topics/drafts/`: one file to fill in for every topic still to decide, named after
-   the topic.
-2. Copy the draft of a topic to `products/<product>/ledger/`, fill in `decision`, commit. A decision
-   can go through a pull request so a second person sees it before it counts.
+   artifact holds `topics/drafts/`: one file to fill in for every topic still to decide (names below).
+2. Copy the draft of a topic to `products/<product>/ledger/` — as it is, no renaming — fill in
+   `decision`, commit. A decision can go through a pull request so a second person sees it before it
+   counts.
 3. The next scan shows the topic as **closed**.
+
+### File names
+
+A draft is named `<severity>.<status>.<topic id>.json`:
+
+| Draft | Means |
+|---|---|
+| `1-high.open.LT-0e42d9a186.json` | high, never decided |
+| `2-medium.reopened.LT-c40e4954e2.json` | medium, decided before; the evidence changed or the decision expired |
+| `3-low.pending-removal.LT-….json` | low, decided `remove`, still in the product |
+
+The number in front makes the names sort high, medium, low in any file list. In the ledger only the
+id at the end counts: `LT-c95612b6e3.json` and `2-medium.open.LT-c95612b6e3.json` are the same
+decision. The label is what the topic was when the draft was made — the report has its status now.
+
+When a topic reopens, its new draft has a different label (`reopened`) from the decision already in
+the ledger (`open`). Replace the old file with the new one: two files for one topic are refused,
+naming both.
 
 A file that is not filled in completely is refused, and the scan fails naming the file and every
 problem in it — a half-written decision never closes a topic silently.
@@ -97,8 +115,8 @@ manager). Delete the file once the topic is certainly gone; Git keeps its histor
 
 ## Checks that make a file count
 
-- `id` belongs to `key`, and the file is named `<id>.json` — a decision copied into the wrong file
-  cannot close another topic.
+- `id` belongs to `key`, and the file name ends in `<id>.json` — a decision copied into the wrong
+  file cannot close another topic. One file per topic.
 - `outcome` is one of the four; `licence` is a well-formed expression for `accept-as`, and empty
   otherwise.
 - `rationale` and `decidedBy` are written; `date` and `expires` are real days, `expires` after `date`.

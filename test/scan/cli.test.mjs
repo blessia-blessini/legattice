@@ -173,17 +173,18 @@ describe('scan workflow steps', () => {
         assert.ok(topics.every((t) => t.status === 'open'));
         assert.match(fs.readFileSync(at('topics', 'topics.md'), 'utf8'), /^## Open topics/);
         assert.match(fs.readFileSync(at('topics-summary.md'), 'utf8'), /5 topic\(s\) .* \*\*To decide: 5\*\*/);
-        // One draft per undecided topic, named by its id.
-        assert.deepEqual(fs.readdirSync(at('topics', 'drafts')).sort(), topics.map((t) => `${t.id}.json`).sort());
+        // One draft per undecided topic, named by severity, status and id.
+        assert.deepEqual(fs.readdirSync(at('topics', 'drafts')).sort(), topics.map((t) => `2-medium.open.${t.id}.json`).sort());
     });
 
     it('topics: a decision filled in from its draft closes the topic; the rest can block', async () => {
         const { topics } = read(at('topics', 'topics.json'));
         const chosen = topics.find((t) => t.package === 'NPM::katex:0.18');
-        const entry = read(at('topics', 'drafts', `${chosen.id}.json`));
+        const draftName = `2-medium.open.${chosen.id}.json`;
+        const entry = read(at('topics', 'drafts', draftName));
         entry.decision = { ...entry.decision, outcome: 'accept-as', licence: 'MIT', rationale: 'Its files say MIT.',
             decidedBy: 'A. Reviewer', date: '2026-10-27' };
-        write(at('ledger', `${chosen.id}.json`), entry);
+        write(at('ledger', draftName), entry); // copied as it is, label and all
         write(at('ledger', 'README.md'), 'not a decision');
         const argv = ['topics', '--scanner-dir', at('scanner'), '--managers', at('managers.txt'), '--out-dir', at('topics-2'),
             '--ledger', at('ledger'), '--today', '2026-10-28'];
@@ -193,7 +194,7 @@ describe('scan workflow steps', () => {
         const after = read(at('topics-2', 'topics.json'));
         assert.equal(after.statusCounts.closed, 1);
         assert.equal(after.topics.find((t) => t.id === chosen.id).status, 'closed');
-        assert.equal(fs.existsSync(at('topics-2', 'drafts', `${chosen.id}.json`)), false);
+        assert.ok(!fs.readdirSync(at('topics-2', 'drafts')).some((n) => n.includes(chosen.id)));
         assert.equal(fs.readdirSync(at('topics-2', 'drafts')).length, 4);
 
         await main([...argv, '--block-at', 'high'], quiet); // the fixture's topics are medium

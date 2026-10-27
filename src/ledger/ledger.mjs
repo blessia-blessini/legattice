@@ -23,8 +23,9 @@
 
 //**************************************************************
 // The ledger: one file per decided topic, written by a person,
-// products/<product>/ledger/<topic id>.json. The only place a
-// human writes; everything else is computed (docs/ledger.md).
+// products/<product>/ledger/[<label>.]<topic id>.json. The only
+// place a human writes; everything else is computed
+// (docs/ledger.md).
 //
 // A decision holds for the evidence it was made on. Each topic
 // of a scan gets a status:
@@ -55,6 +56,13 @@ export const OUTCOMES = Object.freeze({
 
 /** Statuses that still need a person; `closed` does not. */
 export const UNDECIDED = Object.freeze(['reopened', 'pending-removal', 'open']);
+
+/**
+ * A ledger file name: the topic id, optionally after a label such as
+ * the draft's "1-high.open." -- so files sort by severity and copy
+ * into the ledger without renaming. Only the id counts.
+ */
+const FILE_NAME_RE = /^(?:[A-Za-z0-9._-]+\.)?(LT-[0-9a-f]{10})\.json$/;
 
 const ENTRY_FIELDS = ['format', 'id', 'key', 'title', 'evidence', 'decision'];
 const EVIDENCE_FIELDS = ['package', 'declared', 'hash', 'count', 'lines'];
@@ -87,8 +95,9 @@ function unknownFields(object, allowed, where) {
 //**************************************************************
 /**
  * The problems of one ledger file, [] when it is sound. `fileName`
- * must be "<id>.json"; the id must belong to the key, so a decision
- * copied to the wrong file cannot close another topic.
+ * must end in "<id>.json" (see FILE_NAME_RE); the id must belong to
+ * the key, so a decision copied to the wrong file cannot close
+ * another topic.
  */
 export function checkEntry(entry, fileName) {
     if (!isPlainObject(entry)) return ['not a JSON object'];
@@ -99,7 +108,9 @@ export function checkEntry(entry, fileName) {
     } else if (entry.id !== topicId(entry.key)) {
         problems.push(`"id" must be ${topicId(entry.key)} for this key`);
     }
-    if (fileName !== `${entry.id}.json`) problems.push(`the file must be named ${entry.id}.json`);
+    if (FILE_NAME_RE.exec(fileName)?.[1] !== entry.id) {
+        problems.push(`the file name must end in ${entry.id}.json (optionally after a label such as "1-high.open.")`);
+    }
 
     const evidence = entry.evidence;
     if (!isPlainObject(evidence)) {
@@ -150,12 +161,20 @@ export function checkEntry(entry, fileName) {
 export function checkLedger(files) {
     const problems = [];
     const byKey = new Map();
+    const fileOf = new Map();
     for (const { fileName, entry, error } of files) {
         const found = error ? [`not readable JSON (${error})`] : checkEntry(entry, fileName);
         if (found.length) {
             problems.push(...found.map((p) => `${fileName}: ${p}`));
             continue;
         }
+        // Labels make two names for one topic possible (an old decision
+        // next to its reopened draft): which one counts is a person's call.
+        if (fileOf.has(entry.key)) {
+            problems.push(`${fileName}: ${fileOf.get(entry.key)} decides the same topic; keep one of the two`);
+            continue;
+        }
+        fileOf.set(entry.key, fileName);
         byKey.set(entry.key, entry);
     }
     if (problems.length) throw new LedgerError(problems);
@@ -272,6 +291,19 @@ export function draftEntry(topic) {
     };
 }
 // draftEntry END **********************************************
+
+
+//**************************************************************
+// draftFileName
+//**************************************************************
+/**
+ * "1-high.open.LT-0e42d9a186.json": severity (numbered, so names sort
+ * high, medium, low), status, id. Valid in the ledger as it is.
+ */
+export function draftFileName(topic) {
+    return `${SEVERITIES.indexOf(topic.severity) + 1}-${topic.severity}.${topic.status}.${topic.id}.json`;
+}
+// draftFileName END *******************************************
 
 
 //**************************************************************

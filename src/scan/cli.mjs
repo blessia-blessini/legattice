@@ -43,9 +43,11 @@
 //                                        after the decisions in the
 //                                        ledger folder L; D/drafts/:
 //                                        a ledger file to fill in per
-//                                        undecided topic. Fails when
-//                                        undecided topics reach the
-//                                        block level (after writing).
+//                                        undecided topic, named
+//                                        1-high.open.<id>.json.
+//                                        Fails when undecided topics
+//                                        reach the block level (after
+//                                        writing).
 //
 // Analyzer and scanner results are D/<manager>/analyzer-result.json
 // and D/<manager>/scan-result.json, as `ort ... -o D/<manager>`
@@ -62,7 +64,7 @@ import { filterAnalyzerResult, parseDryRunManagers, parseManagerList, scanTiming
 import { mergeTimings, planScan, renderPlanSummary, shardRuns } from './plan.mjs';
 import { probeSizes } from './sizes.mjs';
 import {
-    applyLedger, blockingTopics, checkLedger, draftEntry, isDate, LedgerError, UNDECIDED,
+    applyLedger, blockingTopics, checkLedger, draftEntry, draftFileName, isDate, LedgerError, UNDECIDED,
 } from '../ledger/ledger.mjs';
 import { renderTopics } from '../ledger/report.mjs';
 import { SEVERITIES } from '../topics/licence-classes.mjs';
@@ -271,7 +273,7 @@ function commandTopics(values, { env, log, today }) {
     const drafts = path.join(outDir, 'drafts');
     fs.rmSync(drafts, { recursive: true, force: true });
     for (const topic of report.topics.filter((t) => UNDECIDED.includes(t.status))) {
-        writeJson(path.join(drafts, `${topic.id}.json`), draftEntry(topic));
+        writeJson(path.join(drafts, draftFileName(topic)), draftEntry(topic));
     }
     const summary = renderTopics(report, { limit: SUMMARY_TOPIC_ROWS });
     log(summary);

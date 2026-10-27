@@ -25,7 +25,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-    applyLedger, blockingTopics, checkEntry, checkLedger, draftEntry, evidenceOf, isDate, LedgerError, OUTCOMES,
+    applyLedger, blockingTopics, checkEntry, checkLedger, draftEntry, draftFileName, evidenceOf, isDate, LedgerError,
+    OUTCOMES,
 } from '../../src/ledger/ledger.mjs';
 import { itemTopics, MAX_EVIDENCE } from '../../src/topics/topics.mjs';
 
@@ -80,7 +81,9 @@ describe('checkEntry', () => {
 
     it('ties the file name and the id to the key, so a copied decision closes nothing else', () => {
         const entry = decided(KHROMA);
-        assert.ok(checkEntry(entry, `${CSSPARSER.id}.json`).some((p) => /must be named/.test(p)));
+        for (const name of [`${CSSPARSER.id}.json`, `2-medium.open.${CSSPARSER.id}.json`, `x${KHROMA.id}.json`, `.${KHROMA.id}.json`]) {
+            assert.ok(checkEntry(entry, name).some((p) => /file name must end in/.test(p)), name);
+        }
         const moved = { ...entry, key: CSSPARSER.key };
         assert.ok(checkEntry(moved, `${KHROMA.id}.json`).some((p) => /"id" must be LT-/.test(p)));
     });
@@ -104,6 +107,22 @@ describe('checkEntry', () => {
 });
 
 describe('checkLedger', () => {
+    it('takes a draft name with its label as it is', () => {
+        const entry = decided(KHROMA);
+        const name = draftFileName({ ...KHROMA, status: 'open' });
+        assert.equal(name, `2-medium.open.${KHROMA.id}.json`);
+        assert.deepEqual([...checkLedger([{ fileName: name, entry }]).keys()], [KHROMA.key]);
+    });
+
+    it('refuses two files for one topic, naming both', () => {
+        const files = [
+            { fileName: `2-medium.open.${KHROMA.id}.json`, entry: decided(KHROMA) },
+            { fileName: `2-medium.reopened.${KHROMA.id}.json`, entry: decided(KHROMA, { date: '2026-11-02' }) },
+        ];
+        assert.throws(() => checkLedger(files),
+            /2-medium\.reopened\.LT-[0-9a-f]{10}\.json: 2-medium\.open\.LT-[0-9a-f]{10}\.json decides the same topic/);
+    });
+
     it('lists every problem of every file in one error', () => {
         const files = [
             { fileName: 'LT-0000000000.json', error: 'Unexpected token' },
@@ -162,6 +181,18 @@ describe('applyLedger', () => {
         const { topics, gone } = applyLedger([], entries, TODAY);
         assert.deepEqual(topics, []);
         assert.deepEqual(gone.map((g) => [g.id, g.decision.outcome]), [[DBUS.id, 'remove']]);
+    });
+});
+
+describe('draftFileName', () => {
+    it('numbers the severity so names sort high, medium, low, then names the status', () => {
+        const names = [
+            { ...KHROMA, severity: 'low', status: 'open' },
+            { ...DBUS, status: 'reopened' },
+            { ...CSSPARSER, status: 'pending-removal' },
+        ].map(draftFileName);
+        assert.deepEqual(names, [`3-low.open.${KHROMA.id}.json`, `1-high.reopened.${DBUS.id}.json`, `2-medium.pending-removal.${CSSPARSER.id}.json`]);
+        assert.deepEqual([...names].sort().map((n) => n.split('.')[0]), ['1-high', '2-medium', '3-low']);
     });
 });
 
