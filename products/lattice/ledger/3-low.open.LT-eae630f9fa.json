@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-eae630f9fa",
+  "key": "undeclared-licence|Crate:tower-http|CC0-1.0",
+  "title": "tower-http 0.6.11 (MIT) contains CC0-1.0 in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::tower-http:0.6.11",
+    "declared": "MIT",
+    "hash": "60d792e928fd2d4c",
+    "count": 1,
+    "lines": [
+      "src/compression/pin_project_cfg.rs:1-1 CC0-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

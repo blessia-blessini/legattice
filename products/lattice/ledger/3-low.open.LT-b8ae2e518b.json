@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-b8ae2e518b",
+  "key": "undeclared-licence|Crate:libdbus-sys|LICENSEREF-SCANCODE-G10-PERMISSIVE",
+  "title": "libdbus-sys 0.2.7 (Apache-2.0 OR MIT) contains LicenseRef-scancode-g10-permissive in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::libdbus-sys:0.2.7",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "71eebc0812651abd",
+    "count": 1,
+    "lines": [
+      "vendor/dbus/dbus/versioninfo.rc.in:4-10 LicenseRef-scancode-g10-permissive"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

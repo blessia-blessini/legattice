@@ -1,0 +1,21 @@
+{
+  "format": 1,
+  "id": "LT-c40e4954e2",
+  "key": "declared-licence|Crate:cssparser|MPL-2.0",
+  "title": "cssparser 0.37.0 is licensed MPL-2.0: no permissive choice (MPL-2.0)",
+  "evidence": {
+    "package": "Crate::cssparser:0.37.0",
+    "declared": "MPL-2.0",
+    "hash": "d32b5ff2cddc8e5a",
+    "count": 0,
+    "lines": []
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-7ea7bac162",
+  "key": "undeclared-licence|Crate:libdbus-sys|FSFULLR",
+  "title": "libdbus-sys 0.2.7 (Apache-2.0 OR MIT) contains FSFULLR in 2 place(s): source",
+  "evidence": {
+    "package": "Crate::libdbus-sys:0.2.7",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "0b45c26f9d9c653e",
+    "count": 2,
+    "lines": [
+      "vendor/dbus/m4/ld-version-script.m4:3-5 FSFULLR",
+      "vendor/dbus/m4/visibility.m4:3-5 FSFULLR"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

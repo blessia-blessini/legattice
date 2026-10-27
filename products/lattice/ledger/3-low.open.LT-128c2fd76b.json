@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "id": "LT-128c2fd76b",
+  "key": "undeclared-licence|NPM:katex|APACHE-2.0",
+  "title": "katex 0.18.10 (MIT) contains Apache-2.0 in 9 place(s): source",
+  "evidence": {
+    "package": "NPM::katex:0.18.10",
+    "declared": "MIT",
+    "hash": "c8bec816f10f5a37",
+    "count": 9,
+    "lines": [
+      "contrib/mhchem/mhchem.js:19-43 Apache-2.0",
+      "dist/contrib/mhchem.js:100-124 Apache-2.0",
+      "dist/contrib/mhchem.mjs:21-45 Apache-2.0",
+      "dist/katex.js:116-116 Apache-2.0",
+      "dist/katex.mjs:67-67 Apache-2.0",
+      "src/fonts/Makefile:3-3 Apache-2.0",
+      "src/fonts/Makefile:8-18 Apache-2.0",
+      "src/metrics/mapping.pl:4-4 Apache-2.0",
+      "src/utils.ts:8-8 Apache-2.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

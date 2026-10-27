@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-638e15459a",
+  "key": "undeclared-licence|NPM:d3-geo|MIT",
+  "title": "d3-geo 3.1.1 (ISC) contains MIT in 1 place(s): licence file",
+  "evidence": {
+    "package": "NPM::d3-geo:3.1.1",
+    "declared": "ISC",
+    "hash": "cdc5fbae115d9e81",
+    "count": 1,
+    "lines": [
+      "LICENSE:19-34 MIT"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

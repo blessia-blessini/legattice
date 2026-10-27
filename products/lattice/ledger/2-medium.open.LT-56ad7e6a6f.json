@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-56ad7e6a6f",
+  "key": "undeclared-licence|NPM:mermaid|EPL-1.0",
+  "title": "mermaid 11.17.2 (MIT) contains EPL-1.0 in 1 place(s): source",
+  "evidence": {
+    "package": "NPM::mermaid:11.17.2",
+    "declared": "MIT",
+    "hash": "5e98368e4dcd3c41",
+    "count": 1,
+    "lines": [
+      "dist/mermaid.min.js:3607-3607 Apache-2.0 OR EPL-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

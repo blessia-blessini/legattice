@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-ad2aacfae2",
+  "key": "undeclared-licence|Crate:libdbus-sys|GPL-1.0-OR-LATER",
+  "title": "libdbus-sys 0.2.7 (Apache-2.0 OR MIT) contains GPL-1.0-or-later in 2 place(s): licence file in a folder, source",
+  "evidence": {
+    "package": "Crate::libdbus-sys:0.2.7",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "6ed837528a2e372b",
+    "count": 2,
+    "lines": [
+      "vendor/dbus/COPYING:209-209 GPL-1.0-or-later",
+      "vendor/dbus/dbus/versioninfo.rc.in:38-38 GPL-1.0-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

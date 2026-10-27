@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-2038c31e11",
+  "key": "undeclared-licence|Crate:cesu8|BSD-2-CLAUSE",
+  "title": "cesu8 1.1.0 (Apache-2.0 OR MIT) contains BSD-2-Clause in 2 place(s): licence file",
+  "evidence": {
+    "package": "Crate::cesu8:1.1.0",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "6d46f81f56034fe5",
+    "count": 2,
+    "lines": [
+      "COPYRIGHT-RUST.txt:282-308 BSD-2-Clause",
+      "COPYRIGHT-RUST.txt:379-400 BSD-2-Clause"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

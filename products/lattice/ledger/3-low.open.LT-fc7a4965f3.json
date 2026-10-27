@@ -1,0 +1,28 @@
+{
+  "format": 1,
+  "id": "LT-fc7a4965f3",
+  "key": "undeclared-licence|Crate:zerocopy-derive|BSD-3-CLAUSE",
+  "title": "zerocopy-derive 0.8.63 (Apache-2.0 OR BSD-2-Clause OR MIT) contains BSD-3-Clause in 6 place(s): source",
+  "evidence": {
+    "package": "Crate::zerocopy-derive:0.8.63",
+    "declared": "Apache-2.0 OR BSD-2-Clause OR MIT",
+    "hash": "02a3df3f5c20c8c2",
+    "count": 6,
+    "lines": [
+      "src/derive/project.rs:5-5 BSD-3-Clause",
+      "src/invariant.rs:5-5 BSD-3-Clause",
+      "src/lib.rs:5-5 BSD-3-Clause",
+      "src/output_tests/mod.rs:3-3 BSD-3-Clause",
+      "src/repr.rs:5-5 BSD-3-Clause",
+      "src/util.rs:5-5 BSD-3-Clause"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

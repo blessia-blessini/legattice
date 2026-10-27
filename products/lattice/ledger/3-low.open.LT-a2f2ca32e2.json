@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "id": "LT-a2f2ca32e2",
+  "key": "undeclared-licence|NPM:@mermaid-js/parser|BSD-3-CLAUSE",
+  "title": "@mermaid-js/parser 1.2.1 (MIT) contains BSD-3-Clause in 3 place(s): source",
+  "evidence": {
+    "package": "NPM:@mermaid-js:parser:1.2.1",
+    "declared": "MIT",
+    "hash": "ecccecf50c75bfe2",
+    "count": 3,
+    "lines": [
+      "dist/chunks/mermaid-parser.core/chunk-FOHPRMQF.mjs.map:4-4 BSD-3-Clause",
+      "dist/chunks/mermaid-parser.esm.min/chunk-L2OVAXIS.mjs.map:4-4 BSD-3-Clause",
+      "dist/chunks/mermaid-parser.esm/chunk-JXY6EF7A.mjs.map:4-4 BSD-3-Clause"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

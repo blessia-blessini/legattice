@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "id": "LT-877c3120bf",
+  "key": "undeclared-licence|Crate:zerocopy|BSD-3-CLAUSE",
+  "title": "zerocopy 0.8.63 (Apache-2.0 OR BSD-2-Clause OR MIT) contains BSD-3-Clause in 34 place(s): source",
+  "evidence": {
+    "package": "Crate::zerocopy:0.8.63",
+    "declared": "Apache-2.0 OR BSD-2-Clause OR MIT",
+    "hash": "6d323f98e4287e9a",
+    "count": 34,
+    "lines": [
+      "build.rs:5-5 BSD-3-Clause",
+      "cargo.sh:5-5 BSD-3-Clause",
+      "ci/check_all_toolchains_tested.sh:5-5 BSD-3-Clause",
+      "ci/check_fmt.sh:5-5 BSD-3-Clause",
+      "ci/check_msrv_is_minimal.sh:5-5 BSD-3-Clause",
+      "ci/check_packaging.sh:29-29 BSD-3-Clause",
+      "ci/check_packaging.sh:5-5 BSD-3-Clause",
+      "ci/check_readme.sh:5-5 BSD-3-Clause",
+      "ci/check_stale_stderr.sh:5-5 BSD-3-Clause",
+      "ci/check_versions.sh:5-5 BSD-3-Clause",
+      "ci/release_crate_version.sh:5-5 BSD-3-Clause",
+      "clippy.toml:3-3 BSD-3-Clause",
+      "rustdoc/style.css:5-5 BSD-3-Clause",
+      "src/byte_slice.rs:5-5 BSD-3-Clause",
+      "src/byteorder.rs:5-5 BSD-3-Clause",
+      "src/deprecated.rs:5-5 BSD-3-Clause",
+      "src/doctests.rs:5-5 BSD-3-Clause",
+      "src/error.rs:5-5 BSD-3-Clause",
+      "src/impls.rs:5-5 BSD-3-Clause",
+      "src/layout.rs:5-5 BSD-3-Clause"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

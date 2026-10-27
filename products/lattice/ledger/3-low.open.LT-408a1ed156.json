@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-408a1ed156",
+  "key": "undeclared-licence|Crate:dom_query|APACHE-2.0",
+  "title": "dom_query 0.28.0 (MIT) contains Apache-2.0 in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::dom_query:0.28.0",
+    "declared": "MIT",
+    "hash": "41f837fb1ca5f83b",
+    "count": 1,
+    "lines": [
+      "LICENSE:27-27 Apache-2.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

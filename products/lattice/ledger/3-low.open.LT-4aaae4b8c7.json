@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-4aaae4b8c7",
+  "key": "undeclared-licence|Crate:futures-channel|BSD-2-CLAUSE-VIEWS",
+  "title": "futures-channel 0.3.34 (Apache-2.0 OR MIT) contains BSD-2-Clause-Views in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::futures-channel:0.3.34",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "1d29cb1d0feb5122",
+    "count": 1,
+    "lines": [
+      "src/mpsc/queue.rs:2-25 BSD-2-Clause-Views"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

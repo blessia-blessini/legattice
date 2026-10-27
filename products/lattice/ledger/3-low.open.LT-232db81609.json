@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-232db81609",
+  "key": "undeclared-licence|NPM:d3-scale-chromatic|APACHE-2.0",
+  "title": "d3-scale-chromatic 3.1.0 (ISC) contains Apache-2.0 in 2 place(s): licence file",
+  "evidence": {
+    "package": "NPM::d3-scale-chromatic:3.1.0",
+    "declared": "ISC",
+    "hash": "7b2e15b94a520bd1",
+    "count": 2,
+    "lines": [
+      "LICENSE:15-15 Apache-2.0",
+      "LICENSE:15-28 Apache-2.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

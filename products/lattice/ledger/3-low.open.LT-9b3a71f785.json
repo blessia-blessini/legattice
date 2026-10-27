@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-9b3a71f785",
+  "key": "undeclared-licence|Crate:crossbeam-channel|CC-BY-3.0",
+  "title": "crossbeam-channel 0.5.17 (Apache-2.0 OR MIT) contains CC-BY-3.0 in 2 place(s): licence file",
+  "evidence": {
+    "package": "Crate::crossbeam-channel:0.5.17",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "f3018bb83d4b89c1",
+    "count": 2,
+    "lines": [
+      "LICENSE-THIRD-PARTY:4-4 CC-BY-3.0",
+      "LICENSE-THIRD-PARTY:6-324 CC-BY-3.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

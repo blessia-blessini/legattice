@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-3adad561ff",
+  "key": "undeclared-licence|Crate:cesu8|LGPL-2.0-OR-LATER",
+  "title": "cesu8 1.1.0 (Apache-2.0 OR MIT) contains LGPL-2.0-or-later in 2 place(s): licence file",
+  "evidence": {
+    "package": "Crate::cesu8:1.1.0",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "42384947f75f74ee",
+    "count": 2,
+    "lines": [
+      "COPYRIGHT-RUST.txt:125-125 LGPL-2.0-or-later",
+      "COPYRIGHT-RUST.txt:131-131 LGPL-2.0-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

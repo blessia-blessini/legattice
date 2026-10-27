@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "id": "LT-8ab184296c",
+  "key": "undeclared-licence|Crate:libdbus-sys|LGPL-2.1-OR-LATER",
+  "title": "libdbus-sys 0.2.7 (Apache-2.0 OR MIT) contains LGPL-2.1-or-later in 3 place(s): source",
+  "evidence": {
+    "package": "Crate::libdbus-sys:0.2.7",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "5a059ff01053b7f1",
+    "count": 3,
+    "lines": [
+      "vendor/dbus/dbus/dbus-sysdeps-win.c:2623-2635 LGPL-2.1-or-later",
+      "vendor/dbus/m4/ax_code_coverage.m4:52-53 LGPL-2.1-or-later",
+      "vendor/dbus/m4/ax_code_coverage.m4:64-75 LGPL-2.1-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-37f87a675d",
+  "key": "undeclared-licence|NPM:lodash-es|CC0-1.0",
+  "title": "lodash-es 4.18.1 (MIT) contains CC0-1.0 in 1 place(s): licence file",
+  "evidence": {
+    "package": "NPM::lodash-es:4.18.1",
+    "declared": "MIT",
+    "hash": "eb6ee57fc127716c",
+    "count": 1,
+    "lines": [
+      "LICENSE:36-40 CC0-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

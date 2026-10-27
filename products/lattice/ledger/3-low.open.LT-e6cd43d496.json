@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-e6cd43d496",
+  "key": "undeclared-licence|Crate:tauri-plugin-dialog|CC0-1.0",
+  "title": "tauri-plugin-dialog 2.8.3 (Apache-2.0 OR MIT) contains CC0-1.0 in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::tauri-plugin-dialog:2.8.3",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "d5c309196470a1d8",
+    "count": 1,
+    "lines": [
+      "LICENSE.spdx:2-2 CC0-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

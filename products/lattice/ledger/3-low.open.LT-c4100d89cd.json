@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-c4100d89cd",
+  "key": "undeclared-licence|Crate:utf8_iter|LICENSEREF-SCANCODE-PUBLIC-DOMAIN",
+  "title": "utf8_iter 1.0.4 (Apache-2.0 OR MIT) contains LicenseRef-scancode-public-domain in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::utf8_iter:1.0.4",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "5723c004c3f4c733",
+    "count": 1,
+    "lines": [
+      "COPYRIGHT:19-19 LicenseRef-scancode-public-domain"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

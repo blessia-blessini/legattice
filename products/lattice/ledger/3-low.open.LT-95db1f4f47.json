@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-95db1f4f47",
+  "key": "undeclared-licence|NPM:@tauri-apps/api|0BSD",
+  "title": "@tauri-apps/api 2.12.4 (Apache-2.0 OR MIT) contains 0BSD in 2 place(s): source",
+  "evidence": {
+    "package": "NPM:@tauri-apps:api:2.12.4",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "3c34b48be033572a",
+    "count": 2,
+    "lines": [
+      "external/tslib/tslib.es6.cjs:6-15 0BSD",
+      "external/tslib/tslib.es6.js:4-13 0BSD"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

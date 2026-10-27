@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "LT-d7357ba437",
+  "key": "undeclared-licence|Crate:libdbus-sys|BSD-3-CLAUSE",
+  "title": "libdbus-sys 0.2.7 (Apache-2.0 OR MIT) contains BSD-3-Clause in 4 place(s): licence file in a folder, source",
+  "evidence": {
+    "package": "Crate::libdbus-sys:0.2.7",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "b194d4843d320017",
+    "count": 4,
+    "lines": [
+      "vendor/dbus/cmake/modules/COPYING-CMAKE-SCRIPTS:1-22 BSD-3-Clause",
+      "vendor/dbus/cmake/modules/FindDocBookXSL.cmake:10-32 BSD-3-Clause",
+      "vendor/dbus/cmake/modules/FindGLIB2.cmake:11-12 BSD-3-Clause",
+      "vendor/dbus/cmake/modules/Win32Macros.cmake:6-6 BSD-3-Clause"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

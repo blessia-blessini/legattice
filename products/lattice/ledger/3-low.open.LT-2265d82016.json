@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-2265d82016",
+  "key": "undeclared-licence|Crate:libm|BSD-2-CLAUSE",
+  "title": "libm 0.2.16 (MIT) contains BSD-2-Clause in 2 place(s): source",
+  "evidence": {
+    "package": "Crate::libm:0.2.16",
+    "declared": "MIT",
+    "hash": "9c1457b34e88f4c0",
+    "count": 2,
+    "lines": [
+      "src/math/exp2.rs:6-25 BSD-2-Clause",
+      "src/math/exp2f.rs:6-25 BSD-2-Clause"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-5108da9383",
+  "key": "undeclared-licence|Crate:image|IJG",
+  "title": "image 0.25.10 (Apache-2.0 OR MIT) contains IJG in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::image:0.25.10",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "04a3a4b746d5870a",
+    "count": 1,
+    "lines": [
+      "src/codecs/jpeg/transform.rs:7-14 IJG"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

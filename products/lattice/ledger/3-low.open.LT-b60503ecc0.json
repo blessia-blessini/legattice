@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-b60503ecc0",
+  "key": "undeclared-licence|Crate:cesu8|BZIP2-1.0.6",
+  "title": "cesu8 1.1.0 (Apache-2.0 OR MIT) contains bzip2-1.0.6 in 2 place(s): licence file",
+  "evidence": {
+    "package": "Crate::cesu8:1.1.0",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "0abfc4f2cd887de6",
+    "count": 2,
+    "lines": [
+      "COPYRIGHT-RUST.txt:39-75 bzip2-1.0.6",
+      "COPYRIGHT-RUST.txt:85-121 bzip2-1.0.6"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

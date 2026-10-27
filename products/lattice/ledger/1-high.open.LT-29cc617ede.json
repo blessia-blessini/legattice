@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-29cc617ede",
+  "key": "undeclared-licence|Crate:icu_locale_core|LICENSEREF-SCANCODE-PROPRIETARY-LICENSE",
+  "title": "icu_locale_core 2.4.0 (Unicode-3.0) contains LicenseRef-scancode-proprietary-license in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::icu_locale_core:2.4.0",
+    "declared": "Unicode-3.0",
+    "hash": "1e63748cfba10eeb",
+    "count": 1,
+    "lines": [
+      "src/extensions/private/mod.rs:3-5 LicenseRef-scancode-proprietary-license"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

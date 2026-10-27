@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-6c04fc5506",
+  "key": "undeclared-licence|Crate:icu_locale_core|LICENSEREF-SCANCODE-UNICODE",
+  "title": "icu_locale_core 2.4.0 (Unicode-3.0) contains LicenseRef-scancode-unicode in 2 place(s): source",
+  "evidence": {
+    "package": "Crate::icu_locale_core:2.4.0",
+    "declared": "Unicode-3.0",
+    "hash": "2197b3ea50fb5967",
+    "count": 2,
+    "lines": [
+      "src/extensions/mod.rs:3-5 LicenseRef-scancode-unicode",
+      "src/extensions/unicode/mod.rs:3-5 LicenseRef-scancode-unicode"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

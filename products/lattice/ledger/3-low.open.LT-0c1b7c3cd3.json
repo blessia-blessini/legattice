@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-0c1b7c3cd3",
+  "key": "undeclared-licence|Crate:image|LICENSEREF-SCANCODE-IJG-2020",
+  "title": "image 0.25.10 (Apache-2.0 OR MIT) contains LicenseRef-scancode-ijg-2020 in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::image:0.25.10",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "5469cd789ba32ab6",
+    "count": 1,
+    "lines": [
+      "src/codecs/jpeg/transform.rs:11-51 LicenseRef-scancode-ijg-2020"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

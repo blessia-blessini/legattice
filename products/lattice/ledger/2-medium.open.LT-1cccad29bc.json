@@ -1,0 +1,21 @@
+{
+  "format": 1,
+  "id": "LT-1cccad29bc",
+  "key": "declared-licence|Crate:cssparser-macros|MPL-2.0",
+  "title": "cssparser-macros 0.7.1 is licensed MPL-2.0: no permissive choice (MPL-2.0)",
+  "evidence": {
+    "package": "Crate::cssparser-macros:0.7.1",
+    "declared": "MPL-2.0",
+    "hash": "5147cef604c06761",
+    "count": 0,
+    "lines": []
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

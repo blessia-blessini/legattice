@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "LT-0808cb7bfb",
+  "key": "undeclared-licence|Crate:tao|W3C",
+  "title": "tao 0.37.2 (Apache-2.0) contains W3C in 4 place(s): source",
+  "evidence": {
+    "package": "Crate::tao:0.37.2",
+    "declared": "Apache-2.0",
+    "hash": "1d7202443ccf45aa",
+    "count": 4,
+    "lines": [
+      "src/keyboard.rs:23-23 W3C",
+      "src/keyboard.rs:27-27 W3C",
+      "src/keyboard.rs:60-60 W3C",
+      "src/keyboard.rs:68-72 W3C"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

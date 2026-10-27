@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-2e5561c21e",
+  "key": "undeclared-licence|Crate:crossbeam-channel|BSD-3-CLAUSE",
+  "title": "crossbeam-channel 0.5.17 (Apache-2.0 OR MIT) contains BSD-3-Clause in 2 place(s): licence file",
+  "evidence": {
+    "package": "Crate::crossbeam-channel:0.5.17",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "8f7c35c687c03aa1",
+    "count": 2,
+    "lines": [
+      "LICENSE-THIRD-PARTY:329-329 BSD-3-Clause",
+      "LICENSE-THIRD-PARTY:333-357 BSD-3-Clause"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

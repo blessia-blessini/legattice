@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-3e0f73d8f3",
+  "key": "undeclared-licence|Crate:regex-syntax|UNICODE-DFS-2016",
+  "title": "regex-syntax 0.8.11 (Apache-2.0 OR MIT) contains Unicode-DFS-2016 in 1 place(s): licence file in a folder",
+  "evidence": {
+    "package": "Crate::regex-syntax:0.8.11",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "9e9eba54ca30bcbe",
+    "count": 1,
+    "lines": [
+      "src/unicode_tables/LICENSE-UNICODE:1-57 Unicode-DFS-2016"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

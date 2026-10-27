@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-268a3cff78",
+  "key": "undeclared-licence|Crate:notify|ARTISTIC-2.0",
+  "title": "notify 6.1.1 (CC0-1.0) contains Artistic-2.0 in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::notify:6.1.1",
+    "declared": "CC0-1.0",
+    "hash": "89f8b0aa77453133",
+    "count": 1,
+    "lines": [
+      "src/event.rs:1-1 Artistic-2.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

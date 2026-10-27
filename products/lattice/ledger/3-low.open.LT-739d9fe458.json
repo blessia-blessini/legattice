@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-739d9fe458",
+  "key": "undeclared-licence|Crate:libfuzzer-sys|LICENSEREF-SCANCODE-PUBLIC-DOMAIN",
+  "title": "libfuzzer-sys 0.4.13 ((Apache-2.0 OR MIT) AND NCSA) contains LicenseRef-scancode-public-domain in 2 place(s): source",
+  "evidence": {
+    "package": "Crate::libfuzzer-sys:0.4.13",
+    "declared": "(Apache-2.0 OR MIT) AND NCSA",
+    "hash": "52220a2cd6e416f3",
+    "count": 2,
+    "lines": [
+      "libfuzzer/FuzzerSHA1.cpp:22-22 LicenseRef-scancode-public-domain",
+      "libfuzzer/FuzzerSHA1.cpp:23-23 LicenseRef-scancode-public-domain"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

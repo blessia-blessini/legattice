@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "id": "LT-0e42d9a186",
+  "key": "undeclared-licence|NPM:@mermaid-js/parser|LICENSEREF-SCANCODE-PROPRIETARY-LICENSE",
+  "title": "@mermaid-js/parser 1.2.1 (MIT) contains LicenseRef-scancode-proprietary-license in 3 place(s): source",
+  "evidence": {
+    "package": "NPM:@mermaid-js:parser:1.2.1",
+    "declared": "MIT",
+    "hash": "9200f5fd388912bf",
+    "count": 3,
+    "lines": [
+      "dist/chunks/mermaid-parser.core/chunk-FOHPRMQF.mjs.map:4-4 MIT AND LicenseRef-scancode-proprietary-license",
+      "dist/chunks/mermaid-parser.esm.min/chunk-L2OVAXIS.mjs.map:4-4 MIT AND LicenseRef-scancode-proprietary-license",
+      "dist/chunks/mermaid-parser.esm/chunk-JXY6EF7A.mjs.map:4-4 MIT AND LicenseRef-scancode-proprietary-license"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

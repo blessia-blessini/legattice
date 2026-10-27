@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "id": "LT-52572dd370",
+  "key": "undeclared-licence|Crate:av-scenechange|LICENSEREF-SCANCODE-ALLIANCE-OPEN-MEDIA-PATENT-1.0",
+  "title": "av-scenechange 0.14.1 (MIT) contains LicenseRef-scancode-alliance-open-media-patent-1.0 in 8 place(s): source",
+  "evidence": {
+    "package": "Crate::av-scenechange:0.14.1",
+    "declared": "MIT",
+    "hash": "e66aa13c3a65baa4",
+    "count": 8,
+    "lines": [
+      "src/asm/arm/64/satd.S:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/asm/arm/tables.S:4-9 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/asm/x86/sad_avx.asm:4-9 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/asm/x86/sad_plane.asm:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/asm/x86/sad_sse2.asm:4-9 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/asm/x86/satd.asm:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/asm/x86/satd16_avx2.asm:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/asm/x86/tables.asm:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-4f6aa38443",
+  "key": "undeclared-licence|Crate:tauri-codegen|CC0-1.0",
+  "title": "tauri-codegen 2.7.4 (Apache-2.0 OR MIT) contains CC0-1.0 in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::tauri-codegen:2.7.4",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "19112d7f34c1eafd",
+    "count": 1,
+    "lines": [
+      "src/vendor/blake3_reference.rs:31-31 CC0-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

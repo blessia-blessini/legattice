@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-46cc4906cf",
+  "key": "undeclared-licence|Crate:gdk-pixbuf|LGPL-2.0-OR-LATER",
+  "title": "gdk-pixbuf 0.18.5 (MIT) contains LGPL-2.0-or-later in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::gdk-pixbuf:0.18.5",
+    "declared": "MIT",
+    "hash": "a2ec47b809255be4",
+    "count": 1,
+    "lines": [
+      "COPYRIGHT:12-13 LGPL-2.0-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

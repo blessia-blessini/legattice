@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-919c49b229",
+  "key": "undeclared-licence|Crate:muda|CC0-1.0",
+  "title": "muda 0.20.0 (Apache-2.0 OR MIT) contains CC0-1.0 in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::muda:0.20.0",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "3119fea5b4c859a8",
+    "count": 1,
+    "lines": [
+      "LICENSE.spdx:2-2 CC0-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

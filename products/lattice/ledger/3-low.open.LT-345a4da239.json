@@ -1,0 +1,34 @@
+{
+  "format": 1,
+  "id": "LT-345a4da239",
+  "key": "undeclared-licence|NPM:mermaid|APACHE-2.0",
+  "title": "mermaid 11.17.2 (MIT) contains Apache-2.0 in 12 place(s): source",
+  "evidence": {
+    "package": "NPM::mermaid:11.17.2",
+    "declared": "MIT",
+    "hash": "a63d73f18437ce97",
+    "count": 12,
+    "lines": [
+      "dist/chunks/mermaid.esm.min/architectureDiagram-2PNWDENW.mjs.map:4-4 Apache-2.0",
+      "dist/chunks/mermaid.esm.min/chunk-QJSWEUOL.mjs:131-131 Apache-2.0",
+      "dist/chunks/mermaid.esm.min/katex-CZ4GXH2S.mjs.map:4-4 Apache-2.0",
+      "dist/chunks/mermaid.esm/architectureDiagram-WKWPMKOY.mjs.map:4-4 Apache-2.0",
+      "dist/chunks/mermaid.esm/chunk-AHS5MEEA.mjs:7845-7845 Apache-2.0",
+      "dist/chunks/mermaid.esm/katex-HNBAO5SE.mjs.map:4-4 Apache-2.0",
+      "dist/mermaid.js.map:11811-11811 Apache-2.0",
+      "dist/mermaid.js.map:217276-217476 Apache-2.0",
+      "dist/mermaid.js:193153-193153 Apache-2.0",
+      "dist/mermaid.min.js.map:11811-11811 Apache-2.0",
+      "dist/mermaid.min.js.map:217269-217469 Apache-2.0",
+      "dist/mermaid.min.js:3607-3607 Apache-2.0 OR EPL-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

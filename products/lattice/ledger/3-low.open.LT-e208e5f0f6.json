@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-e208e5f0f6",
+  "key": "undeclared-licence|Crate:wry|CC0-1.0",
+  "title": "wry 0.57.1 (Apache-2.0 OR MIT) contains CC0-1.0 in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::wry:0.57.1",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "1eede39e71fc27bd",
+    "count": 1,
+    "lines": [
+      "LICENSE.spdx:2-2 CC0-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

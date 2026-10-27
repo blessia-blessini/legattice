@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-aecc41bf2e",
+  "key": "undeclared-licence|Crate:notify|ARTISTIC-1.0-PERL",
+  "title": "notify 6.1.1 (CC0-1.0) contains Artistic-1.0-Perl in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::notify:6.1.1",
+    "declared": "CC0-1.0",
+    "hash": "a95590059cfb04f6",
+    "count": 1,
+    "lines": [
+      "src/event.rs:2-2 Artistic-1.0-Perl"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

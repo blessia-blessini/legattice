@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "id": "LT-c6a0dee635",
+  "key": "undeclared-licence|Crate:libm|SUNPRO",
+  "title": "libm 0.2.16 (MIT) contains SunPro in 46 place(s): source",
+  "evidence": {
+    "package": "Crate::libm:0.2.16",
+    "declared": "MIT",
+    "hash": "a3b28ecc27a899ec",
+    "count": 46,
+    "lines": [
+      "src/math/acos.rs:4-9 SunPro",
+      "src/math/acosf.rs:9-12 SunPro",
+      "src/math/asin.rs:4-9 SunPro",
+      "src/math/asinf.rs:9-12 SunPro",
+      "src/math/atan.rs:6-9 SunPro",
+      "src/math/atan2.rs:4-9 SunPro",
+      "src/math/atan2f.rs:9-12 SunPro",
+      "src/math/atanf.rs:9-12 SunPro",
+      "src/math/cbrtf.rs:10-13 SunPro",
+      "src/math/cos.rs:6-9 SunPro",
+      "src/math/cosf.rs:10-13 SunPro",
+      "src/math/erf.rs:7-10 SunPro",
+      "src/math/erff.rs:9-12 SunPro",
+      "src/math/expf.rs:9-12 SunPro",
+      "src/math/expm1.rs:6-9 SunPro",
+      "src/math/expm1f.rs:9-12 SunPro",
+      "src/math/j0.rs:4-9 SunPro",
+      "src/math/j0f.rs:9-12 SunPro",
+      "src/math/j1.rs:4-9 SunPro",
+      "src/math/j1f.rs:9-12 SunPro"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

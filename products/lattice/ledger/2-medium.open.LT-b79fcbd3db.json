@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-b79fcbd3db",
+  "key": "undeclared-licence|Crate:gdkx11|LGPL-2.0-OR-LATER",
+  "title": "gdkx11 0.18.2 (MIT) contains LGPL-2.0-or-later in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::gdkx11:0.18.2",
+    "declared": "MIT",
+    "hash": "c6fdfdc37be00ab3",
+    "count": 1,
+    "lines": [
+      "COPYRIGHT:12-13 LGPL-2.0-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-54bba809f9",
+  "key": "undeclared-licence|Crate:pango|LGPL-2.0-OR-LATER",
+  "title": "pango 0.18.3 (MIT) contains LGPL-2.0-or-later in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::pango:0.18.3",
+    "declared": "MIT",
+    "hash": "17711600c93555cf",
+    "count": 1,
+    "lines": [
+      "COPYRIGHT:12-13 LGPL-2.0-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

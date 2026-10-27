@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-ababc8ec07",
+  "key": "undeclared-licence|Crate:libdbus-sys|FSFAP-NO-WARRANTY-DISCLAIMER",
+  "title": "libdbus-sys 0.2.7 (Apache-2.0 OR MIT) contains FSFAP-no-warranty-disclaimer in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::libdbus-sys:0.2.7",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "81477827d37344c5",
+    "count": 1,
+    "lines": [
+      "vendor/dbus/m4/as-ac-expand.m4:6-8 FSFAP-no-warranty-disclaimer"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

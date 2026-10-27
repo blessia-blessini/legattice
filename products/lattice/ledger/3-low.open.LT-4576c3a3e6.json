@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-4576c3a3e6",
+  "key": "undeclared-licence|NPM:marked|BSD-3-CLAUSE",
+  "title": "marked 16.4.2 (MIT) contains BSD-3-Clause in 1 place(s): licence file",
+  "evidence": {
+    "package": "NPM::marked:16.4.2",
+    "declared": "MIT",
+    "hash": "c9dc1f3c1827a3aa",
+    "count": 1,
+    "lines": [
+      "LICENSE.md:38-44 BSD-3-Clause"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

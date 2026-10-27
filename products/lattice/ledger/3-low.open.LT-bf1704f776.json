@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-bf1704f776",
+  "key": "undeclared-licence|Crate:bs58|UNICODE-DFS-2016",
+  "title": "bs58 0.5.1 (Apache-2.0 OR MIT) contains Unicode-DFS-2016 in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::bs58:0.5.1",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "e7db971952b10178",
+    "count": 1,
+    "lines": [
+      "deny.toml:5-5 Unicode-DFS-2016"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

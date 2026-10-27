@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "id": "LT-4ed4906a15",
+  "key": "undeclared-licence|Crate:libdbus-sys|GPL-2.0-OR-LATER",
+  "title": "libdbus-sys 0.2.7 (Apache-2.0 OR MIT) contains GPL-2.0-or-later in 192 place(s): source, licence file in a folder",
+  "evidence": {
+    "package": "Crate::libdbus-sys:0.2.7",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "7c7001f7f1fa4dff",
+    "count": 192,
+    "lines": [
+      "vendor/dbus/COPYING:1-9 AFL-2.1 OR GPL-2.0-or-later",
+      "vendor/dbus/bus/activation-exit-codes.h:7-21 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/activation-helper-bin.c:7-21 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/activation-helper.c:7-21 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/activation-helper.h:7-21 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/activation.c:8-22 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/activation.h:6-20 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/apparmor.c:8-22 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/apparmor.h:8-22 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/audit.c:9-23 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/audit.h:4-18 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/bus.c:6-20 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/bus.h:6-20 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/config-loader-expat.c:6-20 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/config-parser-common.c:6-20 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/config-parser-common.h:6-20 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/config-parser-trivial.c:7-21 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/config-parser-trivial.h:6-20 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/config-parser.c:6-20 AFL-2.1 AND GPL-2.0-or-later",
+      "vendor/dbus/bus/config-parser.h:6-20 AFL-2.1 AND GPL-2.0-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}

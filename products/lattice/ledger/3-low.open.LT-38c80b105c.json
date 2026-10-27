@@ -1,0 +1,27 @@
+{
+  "format": 1,
+  "id": "LT-38c80b105c",
+  "key": "undeclared-licence|Crate:libdbus-sys|FSFAP",
+  "title": "libdbus-sys 0.2.7 (Apache-2.0 OR MIT) contains FSFAP in 5 place(s): source",
+  "evidence": {
+    "package": "Crate::libdbus-sys:0.2.7",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "078cf9d8f746bf11",
+    "count": 5,
+    "lines": [
+      "vendor/dbus/m4/ax_ac_append_to_file.m4:18-21 FSFAP",
+      "vendor/dbus/m4/ax_ac_print_to_file.m4:19-22 FSFAP",
+      "vendor/dbus/m4/ax_add_am_macro_static.m4:18-21 FSFAP",
+      "vendor/dbus/m4/ax_am_macros_static.m4:23-26 FSFAP",
+      "vendor/dbus/m4/ax_file_escapes.m4:17-20 FSFAP"
+    ]
+  },
+  "decision": {
+    "outcome": "",
+    "licence": "",
+    "rationale": "",
+    "decidedBy": "",
+    "date": "",
+    "expires": null
+  }
+}
