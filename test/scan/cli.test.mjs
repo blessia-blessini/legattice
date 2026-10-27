@@ -200,6 +200,19 @@ describe('scan workflow steps', () => {
         await main([...argv, '--block-at', 'high'], quiet); // the fixture's topics are medium
     });
 
+    it('topics: all drafts copied into the ledger at once are work in progress, not errors', async () => {
+        fs.mkdirSync(at('wip-ledger'));
+        for (const name of fs.readdirSync(at('topics', 'drafts'))) {
+            fs.copyFileSync(at('topics', 'drafts', name), at('wip-ledger', name));
+        }
+        const logged = [];
+        await main(['topics', '--scanner-dir', at('scanner'), '--managers', at('managers.txt'), '--out-dir', at('topics-5'),
+            '--ledger', at('wip-ledger')], { ...quiet, log: (l) => logged.push(l) });
+        assert.ok(logged.includes(`ledger ${at('wip-ledger')}: 0 decision(s), 5 unsigned draft(s)`), logged.join('\n'));
+        const { statusCounts } = read(at('topics-5', 'topics.json'));
+        assert.deepEqual([statusCounts.open, statusCounts.drafting, statusCounts.closed], [5, 5, 0]);
+    });
+
     it('topics: refuses a ledger with a bad file, naming the file and the problem', async () => {
         write(at('bad-ledger', 'LT-0000000000.json'), '{ "format": 1,');
         await assert.rejects(

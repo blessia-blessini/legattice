@@ -71,12 +71,23 @@ describe('checkEntry', () => {
         }
     });
 
-    it('refuses an unsigned draft: no outcome, rationale, person or day', () => {
-        const problems = checkEntry(draftEntry(KHROMA), `${KHROMA.id}.json`);
-        assert.ok(problems.some((p) => /"outcome" must be one of/.test(p)), problems.join('\n'));
-        assert.ok(problems.some((p) => /"rationale" is missing/.test(p)));
-        assert.ok(problems.some((p) => /"decidedBy" is missing/.test(p)));
-        assert.ok(problems.some((p) => /"date" must be a day/.test(p)));
+    it('takes an unsigned draft, filled in or not, checking only its shape', () => {
+        const draft = draftEntry(KHROMA);
+        assert.deepEqual(checkEntry(draft, `${KHROMA.id}.json`), []);
+        draft.decision = { ...draft.decision, outcome: 'accept-as', rationale: 'half way' };
+        assert.deepEqual(checkEntry(draft, `${KHROMA.id}.json`), []);
+        assert.deepEqual(checkEntry({ ...draft, decision: { ...draft.decision, decison: 1 } }, `${KHROMA.id}.json`),
+            ['decision: unknown field "decison"']);
+    });
+
+    it('checks a half-signed decision in full: person without day, or day without person', () => {
+        const blank = draftEntry(KHROMA);
+        const byOnly = checkEntry({ ...blank, decision: { ...blank.decision, decidedBy: 'A. Reviewer' } }, `${KHROMA.id}.json`);
+        assert.ok(byOnly.some((p) => /"outcome" must be one of/.test(p)), byOnly.join('\n'));
+        assert.ok(byOnly.some((p) => /"rationale" is missing/.test(p)));
+        assert.ok(byOnly.some((p) => /"date" must be a day/.test(p)));
+        assert.deepEqual(checkEntry(decided(KHROMA, { decidedBy: '' }), `${KHROMA.id}.json`),
+            ['decision: "decidedBy" is missing (the person who decided)']);
     });
 
     it('ties the file name and the id to the key, so a copied decision closes nothing else', () => {
@@ -111,27 +122,33 @@ describe('checkLedger', () => {
         const entry = decided(KHROMA);
         const name = draftFileName({ ...KHROMA, status: 'open' });
         assert.equal(name, `2-medium.open.${KHROMA.id}.json`);
-        assert.deepEqual([...checkLedger([{ fileName: name, entry }]).keys()], [KHROMA.key]);
+        assert.deepEqual([...checkLedger([{ fileName: name, entry }]).decisions.keys()], [KHROMA.key]);
     });
 
-    it('refuses two files for one topic, naming both', () => {
-        const files = [
-            { fileName: `2-medium.open.${KHROMA.id}.json`, entry: decided(KHROMA) },
-            { fileName: `2-medium.reopened.${KHROMA.id}.json`, entry: decided(KHROMA, { date: '2026-11-02' }) },
-        ];
-        assert.throws(() => checkLedger(files),
-            /2-medium\.reopened\.LT-[0-9a-f]{10}\.json: 2-medium\.open\.LT-[0-9a-f]{10}\.json decides the same topic/);
+    it('takes one decision and one draft per topic, and refuses two of either, naming both', () => {
+        const open = `2-medium.open.${KHROMA.id}.json`;
+        const reopened = `2-medium.reopened.${KHROMA.id}.json`;
+        const both = checkLedger([{ fileName: open, entry: decided(KHROMA) }, { fileName: reopened, entry: draftEntry(KHROMA) }]);
+        assert.deepEqual([both.decisions.size, both.drafts.size], [1, 1]);
+        assert.throws(() => checkLedger([
+            { fileName: open, entry: decided(KHROMA) },
+            { fileName: reopened, entry: decided(KHROMA, { date: '2026-11-02' }) },
+        ]), /2-medium\.reopened\.LT-[0-9a-f]{10}\.json: 2-medium\.open\.LT-[0-9a-f]{10}\.json is a signed decision for the same topic too/);
+        assert.throws(() => checkLedger([
+            { fileName: open, entry: draftEntry(KHROMA) },
+            { fileName: reopened, entry: draftEntry(KHROMA) },
+        ]), /is an unsigned draft for the same topic too/);
     });
 
     it('lists every problem of every file in one error', () => {
         const files = [
             { fileName: 'LT-0000000000.json', error: 'Unexpected token' },
-            { fileName: `${KHROMA.id}.json`, entry: draftEntry(KHROMA) },
+            { fileName: `${KHROMA.id}.json`, entry: decided(KHROMA, { outcome: '', rationale: '', date: '' }) },
             { fileName: `${CSSPARSER.id}.json`, entry: decided(CSSPARSER) },
         ];
         assert.throws(() => checkLedger(files), (e) => e instanceof LedgerError
             && /LT-0000000000\.json: not readable JSON/.test(e.message)
-            && e.problems.filter((p) => p.startsWith(`${KHROMA.id}.json:`)).length >= 4
+            && e.problems.filter((p) => p.startsWith(`${KHROMA.id}.json:`)).length === 3
             && !e.message.includes(`${CSSPARSER.id}.json`));
     });
 });
@@ -143,7 +160,7 @@ describe('applyLedger', () => {
         const { topics, statusCounts } = applyLedger([KHROMA, CSSPARSER], ledgerOf(decided(CSSPARSER)), TODAY);
         assert.deepEqual(topics.map((t) => [t.name, t.status]), [['khroma', 'open'], ['cssparser', 'closed']]);
         assert.equal(topics[1].decision.decidedBy, 'A. Reviewer');
-        assert.deepEqual(statusCounts, { reopened: 0, 'pending-removal': 0, open: 1, closed: 1 });
+        assert.deepEqual(statusCounts, { reopened: 0, 'pending-removal': 0, open: 1, closed: 1, drafting: 0 });
     });
 
     it('reopens a topic when its package is updated, saying what changed', () => {
@@ -181,6 +198,27 @@ describe('applyLedger', () => {
         const { topics, gone } = applyLedger([], entries, TODAY);
         assert.deepEqual(topics, []);
         assert.deepEqual(gone.map((g) => [g.id, g.decision.outcome]), [[DBUS.id, 'remove']]);
+    });
+
+    it('marks a topic with an unsigned draft, closing nothing; an old decision still counts beside it', () => {
+        const fileOf = (entry, label) => ({ fileName: `${label}.${entry.id}.json`, entry });
+        const draftNow = draftEntry({ ...KHROMA, decision: null });
+        const newer = topicsOf('Crate::libdbus-sys:0.2.8', 'Apache-2.0 OR MIT', [['GPL-2.0-only', 'vendor/dbus/a.c']])[0];
+        const ledger = checkLedger([
+            fileOf(draftNow, '2-medium.open'),
+            fileOf(decided(DBUS, { outcome: 'not-shipped' }), '1-high.open'),
+            fileOf(draftEntry({ ...DBUS, decision: null }), '1-high.reopened'), // made on 0.2.7, before the update
+        ]);
+        const { topics, statusCounts } = applyLedger([KHROMA, newer], ledger, TODAY);
+        assert.deepEqual(topics.map((t) => [t.name, t.status, t.drafting]),
+            [['khroma', 'open', 'current'], ['libdbus-sys', 'reopened', 'outdated']]);
+        assert.equal(statusCounts.drafting, 2);
+        assert.equal(blockingTopics(topics, 'medium').length, 2);
+    });
+
+    it('reports a draft whose topic is gone, as unsigned', () => {
+        const ledger = checkLedger([{ fileName: `${KHROMA.id}.json`, entry: draftEntry(KHROMA) }]);
+        assert.deepEqual(applyLedger([], ledger, TODAY).gone.map((g) => [g.id, g.signed]), [[KHROMA.id, false]]);
     });
 });
 

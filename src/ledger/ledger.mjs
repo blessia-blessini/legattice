@@ -36,7 +36,11 @@
 //   pending-removal  -- decided "remove", still found
 //   closed           -- decided, same evidence, not expired
 //
-// A decision whose topic the scan no longer finds is "gone".
+// A file counts as a decision only when it is signed (decidedBy
+// and date). An unsigned file is a draft being worked on: it
+// closes nothing, its topic is marked "drafting". Half-signed is
+// an error. A decision or draft whose topic the scan no longer
+// finds is "gone".
 // This module only checks and compares; it never decides.
 //**************************************************************
 
@@ -71,6 +75,16 @@ const DECISION_FIELDS = ['outcome', 'licence', 'rationale', 'decidedBy', 'date',
 const isText = (v) => typeof v === 'string' && v.trim() !== '';
 const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
+/**
+ * A person has signed the decision: decidedBy or date written. Both
+ * blank = a draft still being worked on; one alone is checked as a
+ * decision and refused for the missing half.
+ */
+export const isSigned = (decision) => isText(decision?.decidedBy) || isText(decision?.date);
+
+/** A ledger with nothing in it (no folder, or no --ledger). */
+export const emptyLedger = () => ({ decisions: new Map(), drafts: new Map() });
+
 
 //**************************************************************
 // isDate
@@ -97,7 +111,8 @@ function unknownFields(object, allowed, where) {
  * The problems of one ledger file, [] when it is sound. `fileName`
  * must end in "<id>.json" (see FILE_NAME_RE); the id must belong to
  * the key, so a decision copied to the wrong file cannot close
- * another topic.
+ * another topic. An unsigned decision is a draft: only its shape is
+ * checked (fields, evidence), its content once it is signed.
  */
 export function checkEntry(entry, fileName) {
     if (!isPlainObject(entry)) return ['not a JSON object'];
@@ -127,6 +142,7 @@ export function checkEntry(entry, fileName) {
     const decision = entry.decision;
     if (!isPlainObject(decision)) return [...problems, '"decision" is missing'];
     problems.push(...unknownFields(decision, DECISION_FIELDS, 'decision: '));
+    if (!isSigned(decision)) return problems;
     if (!Object.hasOwn(OUTCOMES, decision.outcome)) {
         problems.push(`decision: "outcome" must be one of ${Object.keys(OUTCOMES).join(', ')}`);
     }
@@ -155,30 +171,34 @@ export function checkEntry(entry, fileName) {
 //**************************************************************
 /**
  * Checks every file of a ledger: [{ fileName, entry }] as read.
- * Returns the entries by key; throws one error listing every
- * problem of every file, so one run shows all that needs fixing.
+ * Returns { decisions, drafts }, signed and unsigned entries by key;
+ * throws one error listing every problem of every file, so one run
+ * shows all that needs fixing. Per topic at most one decision and
+ * one draft (an old decision next to the draft that reconsiders it).
  */
 export function checkLedger(files) {
     const problems = [];
-    const byKey = new Map();
-    const fileOf = new Map();
+    const ledger = emptyLedger();
+    const fileOf = { decisions: new Map(), drafts: new Map() };
     for (const { fileName, entry, error } of files) {
         const found = error ? [`not readable JSON (${error})`] : checkEntry(entry, fileName);
         if (found.length) {
             problems.push(...found.map((p) => `${fileName}: ${p}`));
             continue;
         }
-        // Labels make two names for one topic possible (an old decision
-        // next to its reopened draft): which one counts is a person's call.
-        if (fileOf.has(entry.key)) {
-            problems.push(`${fileName}: ${fileOf.get(entry.key)} decides the same topic; keep one of the two`);
+        const kind = isSigned(entry.decision) ? 'decisions' : 'drafts';
+        // Labels make two names for one topic possible: which one
+        // counts is a person's call.
+        if (fileOf[kind].has(entry.key)) {
+            const what = kind === 'decisions' ? 'a signed decision' : 'an unsigned draft';
+            problems.push(`${fileName}: ${fileOf[kind].get(entry.key)} is ${what} for the same topic too; keep one of the two`);
             continue;
         }
-        fileOf.set(entry.key, fileName);
-        byKey.set(entry.key, entry);
+        fileOf[kind].set(entry.key, fileName);
+        ledger[kind].set(entry.key, entry);
     }
     if (problems.length) throw new LedgerError(problems);
-    return byKey;
+    return ledger;
 }
 // checkLedger END *********************************************
 
@@ -238,18 +258,22 @@ function changes(before, topic) {
 // applyLedger
 //**************************************************************
 /**
- * Gives each topic its status against the ledger (entries by key,
- * from checkLedger) on day `today` (YYYY-MM-DD):
- *   { topics: [{ ...topic, status, reasons, decision }], gone, statusCounts }
+ * Gives each topic its status against the ledger ({ decisions,
+ * drafts } from checkLedger) on day `today` (YYYY-MM-DD):
+ *   { topics: [{ ...topic, status, reasons, decision, drafting }], gone, statusCounts }
  * `reasons` says why a topic reopened; `decision` is the ledger's.
- * `gone`: the decisions whose topic this scan did not find.
+ * `drafting`: null, or "current" / "outdated" when an unsigned draft
+ * for the topic is in the ledger (outdated: made on other evidence).
+ * `gone`: the decisions and drafts whose topic this scan did not find.
  */
-export function applyLedger(topics, entries, today) {
+export function applyLedger(topics, { decisions, drafts }, today) {
     const seen = new Set();
     const result = topics.map((topic) => {
-        const entry = entries.get(topic.key);
-        if (!entry) return { ...topic, status: 'open', reasons: [], decision: null };
         seen.add(topic.key);
+        const draft = drafts.get(topic.key);
+        const drafting = draft ? (draft.evidence.hash === topic.evidenceHash ? 'current' : 'outdated') : null;
+        const entry = decisions.get(topic.key);
+        if (!entry) return { ...topic, status: 'open', reasons: [], decision: null, drafting };
         const reasons = [];
         if (entry.evidence.hash !== topic.evidenceHash) {
             reasons.push(`evidence changed: ${changes(entry.evidence, topic).join(', ')}`);
@@ -260,11 +284,12 @@ export function applyLedger(topics, entries, today) {
         let status = 'closed';
         if (reasons.length) status = 'reopened';
         else if (entry.decision.outcome === 'remove') status = 'pending-removal';
-        return { ...topic, status, reasons, decision: entry.decision };
+        return { ...topic, status, reasons, decision: entry.decision, drafting };
     });
-    const gone = [...entries.values()].filter((e) => !seen.has(e.key))
-        .map((e) => ({ id: e.id, key: e.key, title: e.title ?? e.key, decision: e.decision }));
+    const gone = [...decisions.values(), ...drafts.values()].filter((e) => !seen.has(e.key))
+        .map((e) => ({ id: e.id, key: e.key, title: e.title ?? e.key, decision: e.decision, signed: isSigned(e.decision) }));
     const statusCounts = Object.fromEntries([...UNDECIDED, 'closed'].map((s) => [s, result.filter((t) => t.status === s).length]));
+    statusCounts.drafting = result.filter((t) => t.drafting && UNDECIDED.includes(t.status)).length;
     return { topics: result, gone, statusCounts };
 }
 // applyLedger END *********************************************

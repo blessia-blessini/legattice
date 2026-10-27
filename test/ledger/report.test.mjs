@@ -24,7 +24,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { applyLedger, checkLedger, draftEntry } from '../../src/ledger/ledger.mjs';
+import { applyLedger, checkLedger, draftEntry, emptyLedger } from '../../src/ledger/ledger.mjs';
 import { renderTopics } from '../../src/ledger/report.mjs';
 import { itemTopics } from '../../src/topics/topics.mjs';
 
@@ -51,6 +51,7 @@ function report(limit) {
         sign(GTK, 'remove'),
         sign(topicOf('NPM::mermaid:11.17.1', 'MIT', [['GPL-2.0-only', 'dist/a.js']]), 'not-shipped'),
         sign(OLD, 'accept-as', { licence: 'MIT' }),
+        draftEntry(KHROMA), // unsigned: being worked on
     ].map((entry) => ({ fileName: `${entry.id}.json`, entry })));
     return renderTopics({ counts: COUNTS, ...applyLedger([MERMAID, KHROMA, GTK, CSSPARSER], entries, '2026-10-27') }, { limit });
 }
@@ -59,7 +60,8 @@ describe('renderTopics', () => {
     it('counts what is to decide and what the ledger closed', () => {
         const md = report();
         assert.match(md, /^## Open topics/);
-        assert.match(md, /4 topic\(s\) in 5 package\(s\) and 1 project\(s\)\. \*\*To decide: 3\*\* \(1 reopened, 1 pending removal, 1 open: 0 high, 1 medium, 0 low\)\. Closed by the ledger: 1\./);
+        assert.match(md, /4 topic\(s\) in 5 package\(s\) and 1 project\(s\)\. \*\*To decide: 3\*\* \(1 reopened, 1 pending removal, 1 open: 0 high, 1 medium, 0 low\)\. Unsigned drafts in the ledger for 1 of them\. Closed by the ledger: 1\./);
+        assert.match(md, new RegExp(`\\| ${KHROMA.id} \\(draft\\) \\| khroma 2\\.1\\.0 declares no licence`));
         assert.match(md, /not legal advice/);
     });
 
@@ -75,7 +77,7 @@ describe('renderTopics', () => {
 
     it('cuts each section at the limit, pointing to the file', () => {
         const many = Array.from({ length: 3 }, (_, i) => topicOf(`NPM::p${i}:1`, 'MPL-2.0'));
-        const md = renderTopics({ counts: COUNTS, ...applyLedger(many, new Map(), '2026-10-27') }, { limit: 1 });
+        const md = renderTopics({ counts: COUNTS, ...applyLedger(many, emptyLedger(), '2026-10-27') }, { limit: 1 });
         assert.match(md, /### medium \(3\)/);
         assert.match(md, /\| … \| 2 more in topics\.md \| \|/);
     });

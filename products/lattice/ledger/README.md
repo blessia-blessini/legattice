@@ -5,4 +5,5 @@ is a person's decision; how to write one and what each field means:
 [docs/ledger.md](../../../docs/ledger.md).
 
 Start from the draft of a topic in the scan's results artifact (`topics/drafts/`, e.g.
-`1-high.open.LT-0e42d9a186.json`) and copy it here as it is.
+`1-high.open.LT-0e42d9a186.json`) and copy it here as it is. A file counts as a decision only once
+`decidedBy` and `date` are filled in; until then it is a draft and closes nothing.

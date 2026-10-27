@@ -64,10 +64,27 @@ decision. The khroma file above is an example of the format, not a decision.
 
 1. Run the scan (**Actions → Scan (ORT)**). The merge job's summary lists the topics; the results
    artifact holds `topics/drafts/`: one file to fill in for every topic still to decide (names below).
-2. Copy the draft of a topic to `products/<product>/ledger/` — as it is, no renaming — fill in
-   `decision`, commit. A decision can go through a pull request so a second person sees it before it
-   counts.
-3. The next scan shows the topic as **closed**.
+2. Copy drafts to `products/<product>/ledger/` — as they are, no renaming. One at a time, or all of
+   them at once to work through: a draft counts only once it is **signed** (below).
+3. Fill in `decision`, then sign it: `decidedBy` and `date`. Commit. A decision can go through a pull
+   request so a second person sees it before it counts.
+4. The next scan shows the topic as **closed**.
+
+### Signed or not
+
+| `decidedBy` and `date` | The file is | The scan |
+|---|---|---|
+| both empty | an **unsigned draft**: work in progress | closes nothing; the topic stays open and is marked **(draft)** in the report |
+| both written | a **decision** | checks it in full; the topic is closed |
+| only one written | half-signed | refuses it and fails, naming what is missing |
+
+So everything else in a draft can be filled in bit by bit, and committed in between; the topic
+stays open until the person signs. A signed file that is not filled in completely is refused, and
+the scan fails naming the file and every problem in it — a half-written decision never closes a
+topic silently.
+
+The report also marks **(draft, older evidence)**: a draft made before the evidence changed. Signed
+as it is, it would reopen at once; take the newer draft from the scan.
 
 ### File names
 
@@ -84,11 +101,9 @@ id at the end counts: `LT-c95612b6e3.json` and `2-medium.open.LT-c95612b6e3.json
 decision. The label is what the topic was when the draft was made — the report has its status now.
 
 When a topic reopens, its new draft has a different label (`reopened`) from the decision already in
-the ledger (`open`). Replace the old file with the new one: two files for one topic are refused,
-naming both.
-
-A file that is not filled in completely is refused, and the scan fails naming the file and every
-problem in it — a half-written decision never closes a topic silently.
+the ledger (`open`). Both may stay side by side while you work: per topic, one signed decision and
+one unsigned draft. Once you sign the new one, delete the old — two signed files (or two unsigned
+ones) for one topic are refused, naming both.
 
 ## Statuses
 
@@ -107,20 +122,25 @@ a package therefore reopens its topics, even when nothing else changed: a new ve
 its licence, and only a person can say it did not.
 
 The draft of a reopened topic carries the earlier decision as a starting point, but without
-`decidedBy` and `date`: it counts again only when a person has looked and signs it again.
+`decidedBy` and `date` — unsigned: it counts again only when a person has looked and signs it again.
 
-A decision whose topic the scan no longer finds is listed under **decisions not found** — the
+A decision or draft whose topic the scan no longer finds is listed under **decisions not found** — the
 component left the product, or the scan did not cover it (for example, a run limited to one package
 manager). Delete the file once the topic is certainly gone; Git keeps its history.
 
 ## Checks that make a file count
 
+Every file, signed or not:
+
 - `id` belongs to `key`, and the file name ends in `<id>.json` — a decision copied into the wrong
-  file cannot close another topic. One file per topic.
+  file cannot close another topic. Per topic one decision and at most one draft.
+- No unknown fields — a misspelt `"decison"` is reported, not ignored.
+
+A signed file, besides:
+
 - `outcome` is one of the four; `licence` is a well-formed expression for `accept-as`, and empty
   otherwise.
 - `rationale` and `decidedBy` are written; `date` and `expires` are real days, `expires` after `date`.
-- No unknown fields — a misspelt `"decison"` is reported, not ignored.
 
 Other files in the ledger folder (a `README.md`) are ignored.
 

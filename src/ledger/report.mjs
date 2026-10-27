@@ -32,8 +32,13 @@ import { SEVERITIES } from '../topics/licence-classes.mjs';
 /** Markdown table cell: one line, no pipes. */
 const cell = (text) => String(text).replace(/\s+/g, ' ').replace(/\|/g, '\\|');
 
-/** "accept-as MIT, Jane Roe, 2026-10-27" */
-const decisionText = (d) => [`${d.outcome}${d.licence ? ` ${d.licence}` : ''}`, d.decidedBy, d.date].join(', ');
+/** "accept-as MIT, A. Reviewer, 2026-10-27"; a draft is not a decision. */
+const decisionText = (d, signed = true) => (signed
+    ? [`${d.outcome}${d.licence ? ` ${d.licence}` : ''}`, d.decidedBy, d.date].join(', ')
+    : 'unsigned draft');
+
+/** The topic id, marked when an unsigned draft for it is in the ledger. */
+const idCell = (t) => (t.drafting ? `${t.id} (draft${t.drafting === 'outdated' ? ', older evidence' : ''})` : t.id);
 
 const whereFirst = (t) => `${cell(t.evidence[0] ?? '')}${t.evidenceCount > 1 ? ` (+${t.evidenceCount - 1})` : ''}`;
 
@@ -70,6 +75,7 @@ export function renderTopics({ counts, topics, gone, statusCounts }, { limit = I
             + ` **To decide: ${toDecide}**`
             + ` (${statusCounts.reopened} reopened, ${statusCounts['pending-removal']} pending removal,`
             + ` ${open.length} open: ${SEVERITIES.map((s) => `${bySeverity(s).length} ${s}`).join(', ')}).`
+            + ` Unsigned drafts in the ledger for ${statusCounts.drafting} of them.`
             + ` Closed by the ledger: ${statusCounts.closed}.`
             + ` Not topics: ${counts.mentions} licence mention(s) in READMEs, docs and tests;`
             + ` ${counts.unidentified} unidentified reference(s) such as "see LICENSE".`,
@@ -79,20 +85,20 @@ export function renderTopics({ counts, topics, gone, statusCounts }, { limit = I
         '',
     ];
     table(lines, 'reopened', ['Topic', 'Severity', 'What', 'Why'],
-        topics.filter((t) => t.status === 'reopened').map((t) => [t.id, t.severity, cell(t.title), cell(t.reasons.join('; '))]), limit);
+        topics.filter((t) => t.status === 'reopened').map((t) => [idCell(t), t.severity, cell(t.title), cell(t.reasons.join('; '))]), limit);
     table(lines, 'pending removal', ['Topic', 'Severity', 'What', 'Decided'],
-        topics.filter((t) => t.status === 'pending-removal').map((t) => [t.id, t.severity, cell(t.title), cell(decisionText(t.decision))]), limit);
+        topics.filter((t) => t.status === 'pending-removal').map((t) => [idCell(t), t.severity, cell(t.title), cell(decisionText(t.decision))]), limit);
     for (const severity of SEVERITIES) {
         table(lines, severity, ['Topic', 'What', 'Where (first)'],
-            bySeverity(severity).map((t) => [t.id, cell(t.title), whereFirst(t)]), limit);
+            bySeverity(severity).map((t) => [idCell(t), cell(t.title), whereFirst(t)]), limit);
     }
     table(lines, 'closed', ['Topic', 'What', 'Decision'],
         topics.filter((t) => t.status === 'closed').map((t) => [t.id, cell(t.title), cell(decisionText(t.decision))]), limit);
     if (gone.length) {
-        lines.push('Decisions whose topic this scan did not find: the component left the product, or the scan did'
+        lines.push('Decisions and drafts whose topic this scan did not find: the component left the product, or the scan did'
             + ' not cover it (fewer package managers). Delete such a file once the topic is certainly gone.', '');
         table(lines, 'decisions not found', ['Topic', 'What', 'Decision'],
-            gone.map((g) => [g.id, cell(g.title), cell(decisionText(g.decision))]), limit);
+            gone.map((g) => [g.id, cell(g.title), cell(decisionText(g.decision, g.signed))]), limit);
     }
     return lines.join('\n');
 }

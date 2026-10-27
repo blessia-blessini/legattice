@@ -64,7 +64,7 @@ import { filterAnalyzerResult, parseDryRunManagers, parseManagerList, scanTiming
 import { mergeTimings, planScan, renderPlanSummary, shardRuns } from './plan.mjs';
 import { probeSizes } from './sizes.mjs';
 import {
-    applyLedger, blockingTopics, checkLedger, draftEntry, draftFileName, isDate, LedgerError, UNDECIDED,
+    applyLedger, blockingTopics, checkLedger, draftEntry, draftFileName, emptyLedger, isDate, LedgerError, UNDECIDED,
 } from '../ledger/ledger.mjs';
 import { renderTopics } from '../ledger/report.mjs';
 import { SEVERITIES } from '../topics/licence-classes.mjs';
@@ -261,11 +261,11 @@ function commandTopics(values, { env, log, today }) {
     if (!isDate(day)) throw new UsageError(`--today must be a day, YYYY-MM-DD, not ${day}`);
     // Checked before the scan results are read: a broken ledger is the
     // cheaper mistake to report, and must never pass silently.
-    const entries = values.ledger === undefined ? new Map() : readLedger(values.ledger, log);
+    const ledger = values.ledger === undefined ? emptyLedger() : readLedger(values.ledger, log);
     const results = readManagers(values.managers).map((manager) =>
         readJson(path.join(values['scanner-dir'], manager, 'scan-result.json')));
     const { counts, topics } = openTopics(results);
-    const report = { format: FORMAT, counts, ...applyLedger(topics, entries, day) };
+    const report = { format: FORMAT, counts, ...applyLedger(topics, ledger, day) };
 
     const outDir = values['out-dir'];
     writeJson(path.join(outDir, 'topics.json'), report);
@@ -292,15 +292,15 @@ function commandTopics(values, { env, log, today }) {
 // readLedger
 //**************************************************************
 /**
- * The decisions in a ledger folder (every *.json file), checked. A
- * folder that does not exist is an empty ledger: Git keeps no empty
- * folders, and a wrong path can only leave more topics open, never
- * close one.
+ * The decisions and unsigned drafts in a ledger folder (every *.json
+ * file), checked. A folder that does not exist is an empty ledger:
+ * Git keeps no empty folders, and a wrong path can only leave more
+ * topics open, never close one.
  */
 function readLedger(dir, log) {
     if (!fs.existsSync(dir)) {
         log(`ledger ${dir} does not exist: no decisions yet`);
-        return new Map();
+        return emptyLedger();
     }
     const files = fs.readdirSync(dir).filter((name) => name.endsWith('.json')).sort().map((fileName) => {
         try {
@@ -310,9 +310,9 @@ function readLedger(dir, log) {
         }
     });
     try {
-        const entries = checkLedger(files);
-        log(`ledger ${dir}: ${entries.size} decision(s)`);
-        return entries;
+        const ledger = checkLedger(files);
+        log(`ledger ${dir}: ${ledger.decisions.size} decision(s), ${ledger.drafts.size} unsigned draft(s)`);
+        return ledger;
     } catch (e) {
         if (e instanceof LedgerError) throw new UsageError(`${dir}: ${e.message}`);
         throw e;
