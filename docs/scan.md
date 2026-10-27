@@ -25,7 +25,8 @@ pieces that run side by side, up to 18 jobs at once.
       5. one ORT scan per package manager, from the stored results
       6. scan whatever a shard did not deliver
       7. write down how long everything took (for the next guess)
-      8. list the open topics: what a person must decide (docs/topics.md)
+      8. list the open topics: what a person must decide (docs/topics.md),
+         after the decisions already made (docs/ledger.md)
       9. write the reports: SBOM, notices, web page
 ```
 

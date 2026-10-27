@@ -57,6 +57,33 @@ function tokenize(text) {
 export function parseExpression(text) {
     const source = String(text ?? '').trim();
     if (!source) return null;
+    try {
+        return parseStrict(source);
+    } catch {
+        return { type: 'leaf', id: source };
+    }
+}
+// parseExpression END *****************************************
+
+
+/** True when `text` is a well-formed licence expression (where a person writes one). */
+export function isExpression(text) {
+    const source = String(text ?? '').trim();
+    if (!source) return false;
+    try {
+        parseStrict(source);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+
+//**************************************************************
+// parseStrict
+//**************************************************************
+/** The tree of a non-empty expression; throws when it does not parse. */
+function parseStrict(source) {
     const tokens = tokenize(source);
     let at = 0;
     const isOp = (t, op) => typeof t === 'string' && t.toUpperCase() === op;
@@ -93,15 +120,11 @@ export function parseExpression(text) {
     const parseAnd = parseList('AND', parsePrimary);
     const parseOr = parseList('OR', parseAnd);
 
-    try {
-        const tree = parseOr();
-        if (at !== tokens.length) throw new Error('trailing text');
-        return tree;
-    } catch {
-        return { type: 'leaf', id: source };
-    }
+    const tree = parseOr();
+    if (at !== tokens.length) throw new Error('trailing text');
+    return tree;
 }
-// parseExpression END *****************************************
+// parseStrict END *********************************************
 
 
 /** Every licence of an expression tree, in order. */

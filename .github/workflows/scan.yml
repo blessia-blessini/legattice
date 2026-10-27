@@ -33,7 +33,8 @@
 #   merge   -- one ORT scan per manager over all stored results
 #              (scans itself whatever a shard did not deliver),
 #              records the times for the next plan, lists the open
-#              topics (docs/topics.md), writes the reports
+#              topics (docs/topics.md) after the decisions in the
+#              ledger (docs/ledger.md), writes the reports
 #   How it works, in plain words: docs/scan.md.
 #
 #   ORT is a separate program (Apache-2.0), run from its container
@@ -72,6 +73,15 @@ on:
         description: 'Scan the sources with ScanCode (off: analyzer and reports only)'
         type: boolean
         default: true
+      ledger:
+        description: 'Folder of decisions in this repo (docs/ledger.md); empty for none'
+        required: false
+        default: 'products/lattice/ledger'
+      block_at:
+        description: 'Fail when undecided topics reach this severity (the reports are still written)'
+        type: choice
+        options: [none, high, medium, low]
+        default: none
 
 env:
   # ORT 97.2.0, image "run" (all tools, ScanCode included). Update both together.
@@ -384,14 +394,21 @@ jobs:
         path: timings
         key: ort-timings-${{ env.ORT_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
 
-    # What a person must decide; in the job summary and in out/topics/.
+    # What a person must decide, after the decisions in the ledger: in
+    # the job summary and in out/topics/ (drafts/: a file to fill in per
+    # undecided topic). Fails at block_at after writing them all.
     - name: 138. List the open topics
       if: inputs.scan
       shell: bash
+      env:
+        LEDGER: ${{ inputs.ledger }}
+        BLOCK_AT: ${{ inputs.block_at }}
       run: |
         set -euo pipefail
+        ledger_arg=()
+        [ -n "$LEDGER" ] && ledger_arg=(--ledger "legattice/$LEDGER")
         node legattice/src/scan/cli.mjs topics --scanner-dir out/scanner --managers out/managers.txt \
-          --out-dir out/topics
+          --out-dir out/topics "${ledger_arg[@]}" --block-at "$BLOCK_AT"
 
     # Also after a failed scan: then from the analyzer result.
     - name: 140. Report

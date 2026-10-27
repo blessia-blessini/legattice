@@ -17,7 +17,8 @@ adds the part around them: the product definition, the ledger of decisions, and 
 > **Status:** early — nothing to install yet. What runs today is the scan: the workflow
 > **Scan (ORT)** finds a product's package managers by itself and spreads the ScanCode work over
 > many jobs at once ([how it works](docs/scan.md)), then lists the **open topics** — the findings a
-> person must decide ([which and why](docs/topics.md)). Recording the decisions comes next.
+> person must decide ([which and why](docs/topics.md)) — and checks them against the **ledger**, the
+> decisions people wrote down ([how](docs/ledger.md)). Notices built from those decisions come next.
 >
 > Legattice reports what the tools find and what people decided. It does not give legal advice;
 > licence decisions stay with a qualified person.

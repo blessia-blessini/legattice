@@ -24,7 +24,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { baseId, leaves, parseExpression, uncovered } from '../../src/topics/spdx.mjs';
+import { baseId, isExpression, leaves, parseExpression, uncovered } from '../../src/topics/spdx.mjs';
 
 describe('parseExpression', () => {
     it('reads single licences, exceptions, AND before OR, and parentheses', () => {
@@ -45,6 +45,17 @@ describe('parseExpression', () => {
         assert.equal(parseExpression(''), null);
         assert.equal(parseExpression(null), null);
         assert.deepEqual(leaves(null), []);
+    });
+});
+
+describe('isExpression', () => {
+    it('accepts what parses and rejects what parseExpression only keeps whole', () => {
+        for (const good of ['MIT', 'Apache-2.0 WITH LLVM-exception', '(MIT OR Apache-2.0) AND NCSA', 'LicenseRef-x']) {
+            assert.equal(isExpression(good), true, good);
+        }
+        for (const bad of ['MIT OR', '(MIT', 'GPL-2.0 WITH', 'MIT licence', '', '   ', null, undefined]) {
+            assert.equal(isExpression(bad), false, String(bad));
+        }
     });
 });
 

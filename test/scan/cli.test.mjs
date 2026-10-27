@@ -33,7 +33,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { main, UsageError } from '../../src/scan/cli.mjs';
+import { BlockedError, main, UsageError } from '../../src/scan/cli.mjs';
 import {
     analyzerResult, artifactProvenance, pkg, project, REPO, repositoryProvenance, REVISION, scanResult,
 } from './fixtures.mjs';
@@ -170,15 +170,59 @@ describe('scan workflow steps', () => {
         const scanned = [...CARGO_PACKAGES, ...NPM_PACKAGES].filter((id) => id !== 'NPM::excluded:1');
         assert.deepEqual(topics.map((t) => t.package).sort(), scanned.sort());
         assert.ok(topics.every((t) => t.rule === 'no-declared-licence'));
+        assert.ok(topics.every((t) => t.status === 'open'));
         assert.match(fs.readFileSync(at('topics', 'topics.md'), 'utf8'), /^## Open topics/);
-        assert.match(fs.readFileSync(at('topics-summary.md'), 'utf8'), /5 open topic\(s\)/);
+        assert.match(fs.readFileSync(at('topics-summary.md'), 'utf8'), /5 topic\(s\) .* \*\*To decide: 5\*\*/);
+        // One draft per undecided topic, named by its id.
+        assert.deepEqual(fs.readdirSync(at('topics', 'drafts')).sort(), topics.map((t) => `${t.id}.json`).sort());
+    });
+
+    it('topics: a decision filled in from its draft closes the topic; the rest can block', async () => {
+        const { topics } = read(at('topics', 'topics.json'));
+        const chosen = topics.find((t) => t.package === 'NPM::katex:0.18');
+        const entry = read(at('topics', 'drafts', `${chosen.id}.json`));
+        entry.decision = { ...entry.decision, outcome: 'accept-as', licence: 'MIT', rationale: 'Its files say MIT.',
+            decidedBy: 'A. Reviewer', date: '2026-10-27' };
+        write(at('ledger', `${chosen.id}.json`), entry);
+        write(at('ledger', 'README.md'), 'not a decision');
+        const argv = ['topics', '--scanner-dir', at('scanner'), '--managers', at('managers.txt'), '--out-dir', at('topics-2'),
+            '--ledger', at('ledger'), '--today', '2026-10-28'];
+
+        await assert.rejects(main([...argv, '--block-at', 'medium'], quiet), BlockedError);
+        // Written before failing: the run still shows what is left.
+        const after = read(at('topics-2', 'topics.json'));
+        assert.equal(after.statusCounts.closed, 1);
+        assert.equal(after.topics.find((t) => t.id === chosen.id).status, 'closed');
+        assert.equal(fs.existsSync(at('topics-2', 'drafts', `${chosen.id}.json`)), false);
+        assert.equal(fs.readdirSync(at('topics-2', 'drafts')).length, 4);
+
+        await main([...argv, '--block-at', 'high'], quiet); // the fixture's topics are medium
+    });
+
+    it('topics: refuses a ledger with a bad file, naming the file and the problem', async () => {
+        write(at('bad-ledger', 'LT-0000000000.json'), '{ "format": 1,');
+        await assert.rejects(
+            main(['topics', '--scanner-dir', at('scanner'), '--managers', at('managers.txt'), '--out-dir', at('topics-3'),
+                '--ledger', at('bad-ledger')], quiet),
+            (e) => e instanceof UsageError && /LT-0000000000\.json: not readable JSON/.test(e.message));
+        assert.equal(fs.existsSync(at('topics-3')), false);
+    });
+
+    it('topics: a missing ledger folder is an empty ledger', async () => {
+        const logged = [];
+        await main(['topics', '--scanner-dir', at('scanner'), '--managers', at('managers.txt'), '--out-dir', at('topics-4'),
+            '--ledger', at('no-ledger-here')], { ...quiet, log: (l) => logged.push(l) });
+        assert.ok(logged.some((l) => /does not exist: no decisions yet/.test(l)));
+        assert.equal(read(at('topics-4', 'topics.json')).statusCounts.open, 5);
     });
 
     it('rejects unknown commands, options and bad numbers as usage errors', async () => {
         for (const argv of [[], ['frobnicate'], ['config', '--bogus', 'x'], ['config'],
             ['plan', '--analyzer-dir', 'a', '--managers', 'm', '--max-shards', 'many', '--out', 'o'],
             ['shard', '--plan', 'p', '--index', '0', '--analyzer-dir', 'a', '--out-dir', 'o'],
-            ['config', '--out', 'x', 'extra']]) {
+            ['config', '--out', 'x', 'extra'],
+            ['topics', '--scanner-dir', 's', '--managers', 'm', '--out-dir', 'o', '--block-at', 'urgent'],
+            ['topics', '--scanner-dir', 's', '--managers', 'm', '--out-dir', 'o', '--today', '28.10.2026']]) {
             await assert.rejects(main(argv, quiet), UsageError, argv.join(' '));
         }
     });

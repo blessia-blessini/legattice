@@ -41,7 +41,7 @@
 //
 // Each topic has a key that stays the same across versions (rule,
 // package without version, licence) and an evidence hash that
-// changes with what was found. The ledger (next step) closes a
+// changes with what was found. The ledger (src/ledger/) closes a
 // key for one evidence hash; new evidence reopens it.
 //**************************************************************
 
@@ -52,11 +52,14 @@ import { CLASSES, licenceClass, SEVERITIES } from './licence-classes.mjs';
 import { archiveRoot, CODE_PLACES, excludedPaths, placeOf } from './places.mjs';
 import { baseId, leaves, parseExpression, uncovered } from './spdx.mjs';
 
-export const FORMAT = 1;
+/** Format of topics.json; 2: each topic has its ledger status, plus "gone" and "statusCounts". */
+export const FORMAT = 2;
 /** Evidence lines kept per topic; the count says how many there were. */
 export const MAX_EVIDENCE = 20;
 
 const sha256 = (text) => createHash('sha256').update(text).digest('hex');
+/** The id of a topic key: "LT-" and 10 hex digits. */
+export const topicId = (key) => `LT-${sha256(key).slice(0, 10)}`;
 const isNoLicence = (expr) => !expr || /^(NOASSERTION|NONE)$/i.test(expr.trim());
 
 /** "NPM::katex:0.18.10" -> { type: "NPM", name: "katex", version: "0.18.10" } ("NPM:@scope:name:1" keeps the scope). */
@@ -124,7 +127,7 @@ function makeTopic({ rule, item, licence, cls, severity = CLASSES[cls].severity,
         .map((f) => `${f.path}:${f.startLine}-${f.endLine} ${f.licence}`)
         .sort();
     return {
-        id: `LT-${sha256(key).slice(0, 10)}`,
+        id: topicId(key),
         key,
         rule,
         severity,
@@ -263,39 +266,3 @@ export function openTopics(ortResults) {
     return { format: FORMAT, counts, topics: sorted };
 }
 // openTopics END **********************************************
-
-
-/** Markdown table cell: one line, no pipes. */
-const cell = (text) => String(text).replace(/\s+/g, ' ').replace(/\|/g, '\\|');
-
-
-//**************************************************************
-// renderTopics
-//**************************************************************
-/** The topic list as Markdown; at most `limit` rows per severity (the file gets them all). */
-export function renderTopics({ counts, topics }, { limit = Infinity } = {}) {
-    const bySeverity = (s) => topics.filter((t) => t.severity === s);
-    const lines = [
-        '## Open topics',
-        '',
-        `${topics.length} open topic(s) in ${counts.packages} package(s) and ${counts.projects} project(s):`
-            + ` ${SEVERITIES.map((s) => `${bySeverity(s).length} ${s}`).join(', ')}.`
-            + ` Not topics: ${counts.mentions} licence mention(s) in READMEs, docs and tests;`
-            + ` ${counts.unidentified} unidentified reference(s) such as "see LICENSE".`,
-        '',
-        '*Found by tools, not legal advice. Each topic needs a person\'s decision.*',
-        '',
-    ];
-    for (const severity of SEVERITIES) {
-        const list = bySeverity(severity);
-        if (!list.length) continue;
-        lines.push(`### ${severity} (${list.length})`, '', '| Topic | What | Where (first) |', '|---|---|---|');
-        for (const t of list.slice(0, limit)) {
-            lines.push(`| ${t.id} | ${cell(t.title)} | ${cell(t.evidence[0] ?? '')}${t.evidenceCount > 1 ? ` (+${t.evidenceCount - 1})` : ''} |`);
-        }
-        if (list.length > limit) lines.push(`| … | ${list.length - limit} more in topics.md | |`);
-        lines.push('');
-    }
-    return lines.join('\n');
-}
-// renderTopics END ********************************************

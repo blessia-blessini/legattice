@@ -36,8 +36,16 @@
 //            [--timings F] [--today YYYY-MM-DD]
 //                                        the updated timings file
 //   topics   --scanner-dir D --managers F --out-dir D
+//            [--ledger L] [--today YYYY-MM-DD]
+//            [--block-at none|high|medium|low]
 //                                        D/topics.json + D/topics.md:
-//                                        what a person must decide
+//                                        what a person must decide,
+//                                        after the decisions in the
+//                                        ledger folder L; D/drafts/:
+//                                        a ledger file to fill in per
+//                                        undecided topic. Fails when
+//                                        undecided topics reach the
+//                                        block level (after writing).
 //
 // Analyzer and scanner results are D/<manager>/analyzer-result.json
 // and D/<manager>/scan-result.json, as `ort ... -o D/<manager>`
@@ -53,14 +61,22 @@ import { ortConfigYaml } from './ort-config.mjs';
 import { filterAnalyzerResult, parseDryRunManagers, parseManagerList, scanTimings, workUnits } from './ort-result.mjs';
 import { mergeTimings, planScan, renderPlanSummary, shardRuns } from './plan.mjs';
 import { probeSizes } from './sizes.mjs';
-import { openTopics, renderTopics } from '../topics/topics.mjs';
+import {
+    applyLedger, blockingTopics, checkLedger, draftEntry, isDate, LedgerError, UNDECIDED,
+} from '../ledger/ledger.mjs';
+import { renderTopics } from '../ledger/report.mjs';
+import { SEVERITIES } from '../topics/licence-classes.mjs';
+import { FORMAT, openTopics } from '../topics/topics.mjs';
 
-/** Topic rows per severity in the job summary; topics.md has them all. */
+/** Topic rows per section in the job summary; topics.md has them all. */
 const SUMMARY_TOPIC_ROWS = 25;
 
 
 /** An error the user caused (bad option, missing file): printed without a stack. */
 export class UsageError extends Error {}
+
+/** Undecided topics at the block level: the run fails, printed without a stack. */
+export class BlockedError extends Error {}
 
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 
@@ -233,18 +249,74 @@ function commandTimings(values, { env, log, today }) {
 //**************************************************************
 // commandTopics
 //**************************************************************
-function commandTopics(values, { env, log }) {
+function commandTopics(values, { env, log, today }) {
     requireOptions(values, ['scanner-dir', 'managers', 'out-dir']);
+    const blockAt = values['block-at'] ?? 'none';
+    if (blockAt !== 'none' && !SEVERITIES.includes(blockAt)) {
+        throw new UsageError(`--block-at must be none, ${SEVERITIES.join(', ')}, not ${blockAt}`);
+    }
+    const day = values.today ?? today;
+    if (!isDate(day)) throw new UsageError(`--today must be a day, YYYY-MM-DD, not ${day}`);
+    // Checked before the scan results are read: a broken ledger is the
+    // cheaper mistake to report, and must never pass silently.
+    const entries = values.ledger === undefined ? new Map() : readLedger(values.ledger, log);
     const results = readManagers(values.managers).map((manager) =>
         readJson(path.join(values['scanner-dir'], manager, 'scan-result.json')));
-    const topics = openTopics(results);
-    writeJson(path.join(values['out-dir'], 'topics.json'), topics);
-    writeText(path.join(values['out-dir'], 'topics.md'), renderTopics(topics) + '\n');
-    const summary = renderTopics(topics, { limit: SUMMARY_TOPIC_ROWS });
+    const { counts, topics } = openTopics(results);
+    const report = { format: FORMAT, counts, ...applyLedger(topics, entries, day) };
+
+    const outDir = values['out-dir'];
+    writeJson(path.join(outDir, 'topics.json'), report);
+    writeText(path.join(outDir, 'topics.md'), renderTopics(report) + '\n');
+    const drafts = path.join(outDir, 'drafts');
+    fs.rmSync(drafts, { recursive: true, force: true });
+    for (const topic of report.topics.filter((t) => UNDECIDED.includes(t.status))) {
+        writeJson(path.join(drafts, `${topic.id}.json`), draftEntry(topic));
+    }
+    const summary = renderTopics(report, { limit: SUMMARY_TOPIC_ROWS });
     log(summary);
     appendGitHub(env, 'GITHUB_STEP_SUMMARY', summary + '\n');
+
+    const blocking = blockingTopics(report.topics, blockAt);
+    if (blocking.length) {
+        throw new BlockedError(`${blocking.length} undecided topic(s) at severity ${blockAt} or above,`
+            + ` e.g. ${blocking.slice(0, 5).map((t) => t.id).join(', ')}`);
+    }
 }
 // commandTopics END *******************************************
+
+
+//**************************************************************
+// readLedger
+//**************************************************************
+/**
+ * The decisions in a ledger folder (every *.json file), checked. A
+ * folder that does not exist is an empty ledger: Git keeps no empty
+ * folders, and a wrong path can only leave more topics open, never
+ * close one.
+ */
+function readLedger(dir, log) {
+    if (!fs.existsSync(dir)) {
+        log(`ledger ${dir} does not exist: no decisions yet`);
+        return new Map();
+    }
+    const files = fs.readdirSync(dir).filter((name) => name.endsWith('.json')).sort().map((fileName) => {
+        try {
+            return { fileName, entry: readJson(path.join(dir, fileName)) };
+        } catch (e) {
+            return { fileName, error: e.message };
+        }
+    });
+    try {
+        const entries = checkLedger(files);
+        log(`ledger ${dir}: ${entries.size} decision(s)`);
+        return entries;
+    } catch (e) {
+        if (e instanceof LedgerError) throw new UsageError(`${dir}: ${e.message}`);
+        throw e;
+    }
+}
+// readLedger END **********************************************
 
 
 const OPTIONS = {
@@ -261,6 +333,8 @@ const OPTIONS = {
     index: { type: 'string' },
     'out-dir': { type: 'string' },
     today: { type: 'string' },
+    ledger: { type: 'string' },
+    'block-at': { type: 'string' },
 };
 
 
@@ -292,7 +366,7 @@ export async function main(argv, {
         case 'plan': return commandPlan(values, { env, log, probe });
         case 'shard': return commandShard(values, log);
         case 'timings': return commandTimings(values, { env, log, today });
-        case 'topics': return commandTopics(values, { env, log });
+        case 'topics': return commandTopics(values, { env, log, today });
         default: throw new UsageError(`unknown command: ${command ?? '(none)'} -- see the head of ${path.basename(fileURLToPath(import.meta.url))}`);
     }
 }
@@ -301,7 +375,7 @@ export async function main(argv, {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
     main(process.argv.slice(2)).catch((e) => {
-        console.error(`::error::${e instanceof UsageError ? e.message : e.stack}`);
+        console.error(`::error::${e instanceof UsageError || e instanceof BlockedError ? e.message : e.stack}`);
         process.exitCode = 1;
     });
 }

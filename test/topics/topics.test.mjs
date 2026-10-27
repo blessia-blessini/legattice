@@ -24,7 +24,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { itemTopics, MAX_EVIDENCE, openTopics, renderTopics, scannedItems, splitId } from '../../src/topics/topics.mjs';
+import { itemTopics, MAX_EVIDENCE, openTopics, scannedItems, splitId, topicId } from '../../src/topics/topics.mjs';
 import { artifactProvenance, pkg, project, REPO, repositoryProvenance, REVISION } from '../scan/fixtures.mjs';
 
 /** A package or project as scannedItems makes it. */
@@ -121,6 +121,7 @@ describe('itemTopics', () => {
         assert.notEqual(a.evidenceHash, b.evidenceHash);
         assert.notEqual(a.evidenceHash, c.evidenceHash);
         assert.match(a.id, /^LT-[0-9a-f]{10}$/);
+        assert.equal(a.id, topicId(a.key));
     });
 
     it('keeps at most MAX_EVIDENCE lines, and says how many there were', () => {
@@ -169,14 +170,6 @@ describe('scannedItems and openTopics', () => {
         ]);
         assert.equal(counts.projects, 1);
         assert.equal(counts.packages, 2);
-    });
-
-    it('renders the list, cut at the limit', () => {
-        const md = renderTopics(openTopics([result]), { limit: 1 });
-        assert.match(md, /^## Open topics/);
-        assert.match(md, /3 open topic\(s\) in 2 package\(s\) and 1 project\(s\): 1 high, 1 medium, 1 low/);
-        assert.match(md, /not legal advice/);
-        assert.match(md, /\| LT-[0-9a-f]{10} \| app 1\.0 \(AGPL-3\.0-or-later\) contains GPL-2\.0-only/);
     });
 
     it('refuses a file without a scan result', () => {

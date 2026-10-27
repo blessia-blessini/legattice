@@ -3,7 +3,8 @@
 A scan finds thousands of licence texts and references. Most of them settle themselves: the
 package says "MIT", its files say MIT. An **open topic** is a finding a person has to look at and
 decide. The merge job of **Scan (ORT)** lists them after every scan — in its job summary and in
-`topics/topics.md` and `topics/topics.json` inside the results artifact.
+`topics/topics.md` and `topics/topics.json` inside the results artifact, with the decisions of the
+[ledger](ledger.md) applied.
 
 *Found by tools, not legal advice.*
 
@@ -49,7 +50,7 @@ Every topic has:
 - an **evidence hash** — the package version and every finding (file, lines, licence). It changes
   when anything found changes.
 
-The ledger (next step) will record a decision for a key *and* an evidence hash. A new version or a
+The [ledger](ledger.md) records a decision for a key *and* an evidence hash. A new version or a
 new finding changes the hash, and the topic opens again by itself.
 
 ## Known limits
