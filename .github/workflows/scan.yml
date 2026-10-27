@@ -32,8 +32,8 @@
 #              only and hands on the results it made
 #   merge   -- one ORT scan per manager over all stored results
 #              (scans itself whatever a shard did not deliver),
-#              records the times for the next plan, writes the
-#              reports
+#              records the times for the next plan, lists the open
+#              topics (docs/topics.md), writes the reports
 #   How it works, in plain words: docs/scan.md.
 #
 #   ORT is a separate program (Apache-2.0), run from its container
@@ -383,6 +383,15 @@ jobs:
       with:
         path: timings
         key: ort-timings-${{ env.ORT_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+    # What a person must decide; in the job summary and in out/topics/.
+    - name: 138. List the open topics
+      if: inputs.scan
+      shell: bash
+      run: |
+        set -euo pipefail
+        node legattice/src/scan/cli.mjs topics --scanner-dir out/scanner --managers out/managers.txt \
+          --out-dir out/topics
 
     # Also after a failed scan: then from the analyzer result.
     - name: 140. Report

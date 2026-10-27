@@ -25,7 +25,8 @@ pieces that run side by side, up to 18 jobs at once.
       5. one ORT scan per package manager, from the stored results
       6. scan whatever a shard did not deliver
       7. write down how long everything took (for the next guess)
-      8. write the reports: SBOM, notices, web page
+      8. list the open topics: what a person must decide (docs/topics.md)
+      9. write the reports: SBOM, notices, web page
 ```
 
 **Nothing is assumed about the product.** The broker does not know beforehand whether it scans
@@ -50,12 +51,12 @@ and is spread like any other.
 
 The broker guesses, best guess first:
 
-| What it knows | Guess |
-|---|---|
-| scanned in an earlier run, result still stored | a lookup: 2 seconds |
-| the size of the package's source archive | seconds per MB, measured on earlier runs of the same package type (until there are 20 measurements: 5 s + 43 s per MB, measured on Lattice's npm packages) |
-| the product's repository, scanned before at another version | as long as last time |
-| nothing (for example a Git repository, whose size is unknown until it is cloned) | 5 minutes |
+| What it knows                                                                    | Guess                                                                                                                                                      |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| scanned in an earlier run, result still stored                                   | a lookup: 2 seconds                                                                                                                                        |
+| the size of the package's source archive                                         | seconds per MB, measured on earlier runs of the same package type (until there are 20 measurements: 5 s + 43 s per MB, measured on Lattice's npm packages) |
+| the product's repository, scanned before at another version                      | as long as last time                                                                                                                                       |
+| nothing (for example a Git repository, whose size is unknown until it is cloned) | 5 minutes                                                                                                                                                  |
 
 The sizes are asked from the registries before scanning (a request for the first byte only; the
 answer names the whole size).
@@ -65,7 +66,8 @@ is close to the best possible split. No shard can finish sooner than the single 
 for Lattice that is `mermaid`, about 13 minutes.
 
 The broker opens fewer shards than allowed when there is little to do: a shard costs 2–3 minutes
-just to start ORT, so it gets at least 5 minutes of work.
+just to start ORT, so it gets at least 5 minutes of work. Looking up a stored result is not work:
+a run where everything is stored gets one shard.
 
 **A wrong guess costs time, never results.** The merge job scans the whole product again, reading
 every result the shards stored, and scans by itself anything that is missing — a shard that failed,
@@ -73,23 +75,23 @@ or ran out of time. Its job summary says how many pieces that were.
 
 ## What is kept between runs
 
-| Kept | Where | For |
-|---|---|---|
-| scan results, file lists, licence-file archive, package origins | GitHub cache `ort-scan-<ORT version>-…` | a piece scanned once is never scanned again |
-| how long each piece took, and its size | GitHub cache `ort-timings-<ORT version>-…` (small) | better guesses next time |
+| Kept                                                            | Where                                              | For                                         |
+| --------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
+| scan results, file lists, licence-file archive, package origins | GitHub cache `ort-scan-<ORT version>-…`            | a piece scanned once is never scanned again |
+| how long each piece took, and its size                          | GitHub cache `ort-timings-<ORT version>-…` (small) | better guesses next time                    |
 
 A new ORT version starts with empty caches: its results might differ. Timings not seen for 180 days
 are dropped.
 
 ## Code
 
-| File | What it does |
-|---|---|
+| File                      | What it does                                                                                                                                                   |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/scan/ort-result.mjs` | reads ORT's files: the package managers of the dry run, the pieces of an analyzer result, the times in a scan result; hides the packages a shard must not scan |
-| `src/scan/plan.mjs` | the guesses, the sharing out, the timings file |
-| `src/scan/sizes.mjs` | asks the registries for archive sizes |
-| `src/scan/ort-config.mjs` | ORT's configuration, the same for every job |
-| `src/scan/cli.mjs` | the commands the workflow calls |
+| `src/scan/plan.mjs`       | the guesses, the sharing out, the timings file                                                                                                                 |
+| `src/scan/sizes.mjs`      | asks the registries for archive sizes                                                                                                                          |
+| `src/scan/ort-config.mjs` | ORT's configuration, the same for every job                                                                                                                    |
+| `src/scan/cli.mjs`        | the commands the workflow calls                                                                                                                                |
 
 Node 24, nothing installed besides it. Tests: `npm test` (or `node --test`).
 

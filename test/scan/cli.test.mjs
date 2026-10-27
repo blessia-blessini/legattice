@@ -161,6 +161,19 @@ describe('scan workflow steps', () => {
         assert.equal(plan.shards.length, 1);
     });
 
+    it('topics: lists what a person must decide, in a file and the job summary', async () => {
+        const env = { GITHUB_STEP_SUMMARY: at('topics-summary.md') };
+        await main(['topics', '--scanner-dir', at('scanner'), '--managers', at('managers.txt'), '--out-dir', at('topics')],
+            { ...quiet, env });
+        const { topics } = read(at('topics', 'topics.json'));
+        // The fixture packages declare no licence: one topic each, for those ORT scanned.
+        const scanned = [...CARGO_PACKAGES, ...NPM_PACKAGES].filter((id) => id !== 'NPM::excluded:1');
+        assert.deepEqual(topics.map((t) => t.package).sort(), scanned.sort());
+        assert.ok(topics.every((t) => t.rule === 'no-declared-licence'));
+        assert.match(fs.readFileSync(at('topics', 'topics.md'), 'utf8'), /^## Open topics/);
+        assert.match(fs.readFileSync(at('topics-summary.md'), 'utf8'), /5 open topic\(s\)/);
+    });
+
     it('rejects unknown commands, options and bad numbers as usage errors', async () => {
         for (const argv of [[], ['frobnicate'], ['config', '--bogus', 'x'], ['config'],
             ['plan', '--analyzer-dir', 'a', '--managers', 'm', '--max-shards', 'many', '--out', 'o'],

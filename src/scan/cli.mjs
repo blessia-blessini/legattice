@@ -35,6 +35,9 @@
 //   timings  --scanner-dir D --managers F --plan F --out F
 //            [--timings F] [--today YYYY-MM-DD]
 //                                        the updated timings file
+//   topics   --scanner-dir D --managers F --out-dir D
+//                                        D/topics.json + D/topics.md:
+//                                        what a person must decide
 //
 // Analyzer and scanner results are D/<manager>/analyzer-result.json
 // and D/<manager>/scan-result.json, as `ort ... -o D/<manager>`
@@ -50,6 +53,10 @@ import { ortConfigYaml } from './ort-config.mjs';
 import { filterAnalyzerResult, parseDryRunManagers, parseManagerList, scanTimings, workUnits } from './ort-result.mjs';
 import { mergeTimings, planScan, renderPlanSummary, shardRuns } from './plan.mjs';
 import { probeSizes } from './sizes.mjs';
+import { openTopics, renderTopics } from '../topics/topics.mjs';
+
+/** Topic rows per severity in the job summary; topics.md has them all. */
+const SUMMARY_TOPIC_ROWS = 25;
 
 
 /** An error the user caused (bad option, missing file): printed without a stack. */
@@ -223,6 +230,23 @@ function commandTimings(values, { env, log, today }) {
 // commandTimings END ******************************************
 
 
+//**************************************************************
+// commandTopics
+//**************************************************************
+function commandTopics(values, { env, log }) {
+    requireOptions(values, ['scanner-dir', 'managers', 'out-dir']);
+    const results = readManagers(values.managers).map((manager) =>
+        readJson(path.join(values['scanner-dir'], manager, 'scan-result.json')));
+    const topics = openTopics(results);
+    writeJson(path.join(values['out-dir'], 'topics.json'), topics);
+    writeText(path.join(values['out-dir'], 'topics.md'), renderTopics(topics) + '\n');
+    const summary = renderTopics(topics, { limit: SUMMARY_TOPIC_ROWS });
+    log(summary);
+    appendGitHub(env, 'GITHUB_STEP_SUMMARY', summary + '\n');
+}
+// commandTopics END *******************************************
+
+
 const OPTIONS = {
     out: { type: 'string' },
     manager: { type: 'string' },
@@ -268,6 +292,7 @@ export async function main(argv, {
         case 'plan': return commandPlan(values, { env, log, probe });
         case 'shard': return commandShard(values, log);
         case 'timings': return commandTimings(values, { env, log, today });
+        case 'topics': return commandTopics(values, { env, log });
         default: throw new UsageError(`unknown command: ${command ?? '(none)'} -- see the head of ${path.basename(fileURLToPath(import.meta.url))}`);
     }
 }

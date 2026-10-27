@@ -163,15 +163,17 @@ function compareUnits(a, b) {
  * longest single unit.
  *
  * Fewer shards than allowed when there is little work (MIN_SHARD_SECONDS
- * each) or few units; none when there are no units.
+ * each) or few units; none when there are no units. Stored units (basis
+ * "stored") do not count as work: 908 lookups are no reason to start 7
+ * jobs (legattice run 40491614153).
  */
 export function packShards(units, maxShards) {
     if (!Number.isInteger(maxShards) || maxShards < 1) {
         throw new Error(`bad shard count: ${maxShards}`);
     }
     if (units.length === 0) return [];
-    const total = units.reduce((sum, u) => sum + u.seconds, 0);
-    const count = Math.min(maxShards, units.length, Math.max(1, Math.ceil(total / MIN_SHARD_SECONDS)));
+    const work = units.reduce((sum, u) => sum + (u.basis === 'stored' ? 0 : u.seconds), 0);
+    const count = Math.min(maxShards, units.length, Math.max(1, Math.ceil(work / MIN_SHARD_SECONDS)));
     const shards = Array.from({ length: count }, (_, i) => ({ index: i + 1, seconds: 0, units: [] }));
     for (const unit of [...units].sort(compareUnits)) {
         let least = shards[0];

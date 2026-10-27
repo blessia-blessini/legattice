@@ -111,6 +111,9 @@ describe('packShards', () => {
     it('never makes more shards than units, or than the work is worth', () => {
         assert.equal(packShards(units(10_000, 10_000), 16).length, 2);
         assert.equal(packShards(units(...Array(100).fill(STORED_SECONDS)), 16).length, 1);
+        const stored = Array.from({ length: 908 }, (_, i) => ({ key: `s${i}`, seconds: STORED_SECONDS, basis: 'stored' }));
+        assert.equal(packShards(stored, 16).length, 1, 'lookups are not work');
+        assert.equal(packShards([...stored, { key: 'new', seconds: 2 * MIN_SHARD_SECONDS, basis: 'size' }], 16).length, 2);
         assert.equal(packShards(units(...Array(10).fill(MIN_SHARD_SECONDS)), 16).length, 10);
         assert.deepEqual(packShards([], 16), []);
     });
