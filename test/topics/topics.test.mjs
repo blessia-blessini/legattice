@@ -172,6 +172,17 @@ describe('scannedItems and openTopics', () => {
         assert.equal(counts.packages, 2);
     });
 
+    it('keeps copyright statements and file SHA-1s, with the archive top folder off their paths', () => {
+        const withCopyrights = structuredClone(result);
+        const katexScan = withCopyrights.scanner.scan_results[0];
+        katexScan.summary.copyrights = [{ statement: 'Copyright (c) 2013-2020 Khan Academy', location: { path: 'package/LICENSE', start_line: 3, end_line: 3 } }];
+        withCopyrights.scanner.files[0].files = [{ path: 'package/LICENSE', sha1: 'abc' }, { path: 'package/dist/x.js' }];
+        const katex = scannedItems(withCopyrights).find((i) => i.id === 'NPM::katex:0.18.10');
+        assert.deepEqual(katex.copyrights, [{ statement: 'Copyright (c) 2013-2020 Khan Academy', path: 'LICENSE', startLine: 3, endLine: 3 }]);
+        assert.deepEqual(katex.sha1, { LICENSE: 'abc' });
+        assert.deepEqual(scannedItems(result).find((i) => i.id === 'NPM::khroma:2.1.0').copyrights, []);
+    });
+
     it('refuses a file without a scan result', () => {
         assert.throws(() => scannedItems({ analyzer: { result: {} } }), /not an ORT scan result/);
     });

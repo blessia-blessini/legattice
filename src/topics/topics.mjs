@@ -74,8 +74,10 @@ export function splitId(id) {
 //**************************************************************
 /**
  * The packages and projects of one ORT scan result, each with its
- * declared licence and its licence findings:
- * [{ kind, id, declared, findings: [{ licence, path, startLine, endLine, place }] }]
+ * declared licence, its licence findings, its copyright statements and
+ * the SHA-1 of each scanned file:
+ * [{ kind, id, declared, findings: [{ licence, path, startLine, endLine, place }],
+ *    copyrights: [{ statement, path, startLine, endLine }], sha1: { path: sha1 } }]
  * Paths are relative to the package (archive top folder removed) or to
  * the repository; project findings under a path exclude are dropped.
  */
@@ -84,7 +86,8 @@ export function scannedItems(ortResult) {
     const content = ortResult?.analyzer?.result;
     if (!scanner || !content) throw new Error('not an ORT scan result');
     const results = new Map(scanner.scan_results.map((r) => [provenanceKey(r.provenance), r]));
-    const files = new Map((scanner.files ?? []).map((f) => [provenanceKey(f.provenance), f.files.map((x) => x.path)]));
+    const fileLists = new Map((scanner.files ?? []).map((f) => [provenanceKey(f.provenance), f.files]));
+    const files = new Map([...fileLists].map(([key, list]) => [key, list.map((x) => x.path)]));
     const declared = new Map([...content.packages, ...content.projects]
         .map((p) => [p.id, p.declared_licenses_processed?.spdx_expression ?? null]));
     const projects = new Map(content.projects.map((p) => [p.id, p]));
@@ -97,11 +100,22 @@ export function scannedItems(ortResult) {
         if (!result) continue;
         const project = projects.get(id);
         const root = provenance.source_artifact?.url ? archiveRoot(files.get(key) ?? []) : '';
+        const relative = (p) => (p.startsWith(root) ? p.slice(root.length) : p);
         const findings = [];
         for (const f of result.summary?.licenses ?? []) {
-            const path = f.location.path.startsWith(root) ? f.location.path.slice(root.length) : f.location.path;
+            const path = relative(f.location.path);
             if (project && isExcluded(path)) continue;
             findings.push({ licence: f.license, path, startLine: f.location.start_line, endLine: f.location.end_line, place: placeOf(path) });
+        }
+        const copyrights = [];
+        for (const c of result.summary?.copyrights ?? []) {
+            const path = relative(c.location.path);
+            if (project && isExcluded(path)) continue;
+            copyrights.push({ statement: c.statement, path, startLine: c.location.start_line, endLine: c.location.end_line });
+        }
+        const sha1 = {};
+        for (const f of fileLists.get(key) ?? []) {
+            if (f.sha1) sha1[relative(f.path)] = f.sha1;
         }
         items.push({
             kind: project ? 'project' : 'package',
@@ -109,6 +123,8 @@ export function scannedItems(ortResult) {
             repository: project?.vcs_processed?.url ?? null,
             declared: declared.get(id) ?? null,
             findings,
+            copyrights,
+            sha1,
         });
     }
     return items;
@@ -242,16 +258,20 @@ export function itemTopics(item) {
  * All topics of a product from its scan results (one per package
  * manager). A topic found through two managers (the product's own
  * repository) is listed once. Sorted by severity, then title.
+ * `items`: the packages and projects they came from (scannedItems),
+ * each once, for what the decisions add to the notices.
  */
 export function openTopics(ortResults) {
     const topics = new Map();
     const counts = { packages: 0, projects: 0, mentions: 0, unidentified: 0 };
     const seenItems = new Set();
+    const items = [];
     for (const result of ortResults) {
         for (const item of scannedItems(result)) {
             const itemKey = item.kind === 'project' ? `project:${item.repository ?? item.id}` : item.id;
             if (seenItems.has(itemKey)) continue;
             seenItems.add(itemKey);
+            items.push(item);
             counts[item.kind === 'project' ? 'projects' : 'packages'] += 1;
             const found = itemTopics(item);
             counts.mentions += found.counts.mentions;
@@ -263,6 +283,6 @@ export function openTopics(ortResults) {
     }
     const rank = (t) => SEVERITIES.indexOf(t.severity);
     const sorted = [...topics.values()].sort((a, b) => rank(a) - rank(b) || a.title.localeCompare(b.title, 'en'));
-    return { format: FORMAT, counts, topics: sorted };
+    return { format: FORMAT, counts, topics: sorted, items };
 }
 // openTopics END **********************************************

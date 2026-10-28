@@ -396,19 +396,24 @@ jobs:
 
     # What a person must decide, after the decisions in the ledger: in
     # the job summary and in out/topics/ (drafts/: a file to fill in per
-    # undecided topic). Fails at block_at after writing them all.
+    # undecided topic). With a ledger, also out/topics/notice-additions.json:
+    # what its decisions add to the product's notices (docs/notices.md).
+    # Fails at block_at after writing them all.
     - name: 138. List the open topics
       if: inputs.scan
       shell: bash
       env:
         LEDGER: ${{ inputs.ledger }}
         BLOCK_AT: ${{ inputs.block_at }}
+        PRODUCT_REPOSITORY: ${{ inputs.repository }}
+        PRODUCT_REF: ${{ inputs.ref }}
       run: |
         set -euo pipefail
         ledger_arg=()
         [ -n "$LEDGER" ] && ledger_arg=(--ledger "legattice/$LEDGER")
         node legattice/src/scan/cli.mjs topics --scanner-dir out/scanner --managers out/managers.txt \
-          --out-dir out/topics "${ledger_arg[@]}" --block-at "$BLOCK_AT"
+          --out-dir out/topics "${ledger_arg[@]}" --block-at "$BLOCK_AT" \
+          --product-repository "$PRODUCT_REPOSITORY" --product-ref "$PRODUCT_REF"
 
     # Also after a failed scan: then from the analyzer result.
     - name: 140. Report

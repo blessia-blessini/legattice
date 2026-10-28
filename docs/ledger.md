@@ -168,11 +168,13 @@ library. The cost: JSON has no comments, so everything worth saying goes into `r
 ## Code
 
 `src/ledger/ledger.mjs` (checks, statuses, drafts, blocking), `src/ledger/report.mjs` (the Markdown
-report); the `topics` command in `src/scan/cli.mjs` reads the folder and writes the files.
+report), `src/ledger/additions.mjs` (notice additions); the `topics` command in `src/scan/cli.mjs`
+reads the folder and writes the files.
 
 ## Not yet
 
-- **Notices from the ledger.** An `accept-as` decision does not yet change the notices or the SBOM;
-  that is the next step.
+- **Notices from the ledger.** A decision that adds a licence to a package is exported as a notice
+  addition ([notices.md](notices.md)); the product's notices tool reads it. The SBOM does not take
+  it yet.
 - **Who may decide.** Git records who committed a decision; requiring a named reviewer's approval
   (CODEOWNERS plus branch protection) is left to the repository's settings.

@@ -197,7 +197,16 @@ describe('scan workflow steps', () => {
         assert.ok(!fs.readdirSync(at('topics-2', 'drafts')).some((n) => n.includes(chosen.id)));
         assert.equal(fs.readdirSync(at('topics-2', 'drafts')).length, 4);
 
-        await main([...argv, '--block-at', 'high'], quiet); // the fixture's topics are medium
+        const env = { GITHUB_SERVER_URL: 'https://github.com', GITHUB_REPOSITORY: 'owner/legattice', GITHUB_RUN_ID: '42', GITHUB_SHA: 'abc123' };
+        await main([...argv, '--block-at', 'high', '--product-repository', 'owner/product', '--product-ref', 'v1'], { ...quiet, env });
+        // A package without a declared licence settles its own metadata: no addition.
+        assert.deepEqual(read(at('topics-2', 'notice-additions.json')), {
+            format: 1,
+            source: { product: { repository: 'owner/product', ref: 'v1' }, date: '2026-10-28', legattice: 'abc123',
+                run: 'https://github.com/owner/legattice/actions/runs/42' },
+            additions: [],
+        });
+        assert.equal(fs.existsSync(at('topics', 'notice-additions.json')), false); // no ledger, no additions
     });
 
     it('topics: all drafts copied into the ledger at once are work in progress, not errors', async () => {

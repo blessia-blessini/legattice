@@ -38,6 +38,7 @@
 //   topics   --scanner-dir D --managers F --out-dir D
 //            [--ledger L] [--today YYYY-MM-DD]
 //            [--block-at none|high|medium|low]
+//            [--product-repository R] [--product-ref REF]
 //                                        D/topics.json + D/topics.md:
 //                                        what a person must decide,
 //                                        after the decisions in the
@@ -45,6 +46,11 @@
 //                                        a ledger file to fill in per
 //                                        undecided topic, named
 //                                        1-high.open.<id>.json.
+//                                        With a ledger, also
+//                                        D/notice-additions.json:
+//                                        what its decisions add to the
+//                                        product's notices (R and REF
+//                                        name what was scanned).
 //                                        Fails when undecided topics
 //                                        reach the block level (after
 //                                        writing).
@@ -66,6 +72,7 @@ import { probeSizes } from './sizes.mjs';
 import {
     applyLedger, blockingTopics, checkLedger, draftEntry, draftFileName, emptyLedger, isDate, LedgerError, UNDECIDED,
 } from '../ledger/ledger.mjs';
+import { noticeAdditions } from '../ledger/additions.mjs';
 import { renderTopics } from '../ledger/report.mjs';
 import { SEVERITIES } from '../topics/licence-classes.mjs';
 import { FORMAT, openTopics } from '../topics/topics.mjs';
@@ -264,12 +271,18 @@ function commandTopics(values, { env, log, today }) {
     const ledger = values.ledger === undefined ? emptyLedger() : readLedger(values.ledger, log);
     const results = readManagers(values.managers).map((manager) =>
         readJson(path.join(values['scanner-dir'], manager, 'scan-result.json')));
-    const { counts, topics } = openTopics(results);
+    const { counts, topics, items } = openTopics(results);
     const report = { format: FORMAT, counts, ...applyLedger(topics, ledger, day) };
 
     const outDir = values['out-dir'];
     writeJson(path.join(outDir, 'topics.json'), report);
     writeText(path.join(outDir, 'topics.md'), renderTopics(report) + '\n');
+    if (values.ledger !== undefined) {
+        const additions = noticeAdditions(items, report.topics, additionsSource(values, env, day));
+        writeJson(path.join(outDir, 'notice-additions.json'), additions);
+        const packages = new Set(additions.additions.map((a) => a.package.id)).size;
+        log(`notice additions: ${additions.additions.length} decision(s) add licences to ${packages} package(s)`);
+    }
     const drafts = path.join(outDir, 'drafts');
     fs.rmSync(drafts, { recursive: true, force: true });
     for (const topic of report.topics.filter((t) => UNDECIDED.includes(t.status))) {
@@ -286,6 +299,27 @@ function commandTopics(values, { env, log, today }) {
     }
 }
 // commandTopics END *******************************************
+
+
+//**************************************************************
+// additionsSource
+//**************************************************************
+/**
+ * What notice-additions.json was made from: the product repository and
+ * ref (options), the day, and on GitHub Actions the Legattice commit
+ * and the run. Unknown parts are null.
+ */
+function additionsSource(values, env, day) {
+    const server = env.GITHUB_SERVER_URL;
+    const repo = env.GITHUB_REPOSITORY;
+    return {
+        product: { repository: values['product-repository'] ?? null, ref: values['product-ref'] ?? null },
+        date: day,
+        legattice: env.GITHUB_SHA ?? null,
+        run: server && repo && env.GITHUB_RUN_ID ? `${server}/${repo}/actions/runs/${env.GITHUB_RUN_ID}` : null,
+    };
+}
+// additionsSource END *****************************************
 
 
 //**************************************************************
@@ -337,6 +371,8 @@ const OPTIONS = {
     today: { type: 'string' },
     ledger: { type: 'string' },
     'block-at': { type: 'string' },
+    'product-repository': { type: 'string' },
+    'product-ref': { type: 'string' },
 };
 
 
