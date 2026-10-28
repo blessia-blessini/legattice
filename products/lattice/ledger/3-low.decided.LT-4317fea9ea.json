@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "id": "LT-4317fea9ea",
+  "key": "undeclared-licence|Crate:x11-dl|LICENSEREF-SCANCODE-PUBLIC-DOMAIN",
+  "title": "x11-dl 2.21.0 (MIT) contains LicenseRef-scancode-public-domain in 25 place(s): source",
+  "evidence": {
+    "package": "Crate::x11-dl:2.21.0",
+    "declared": "MIT",
+    "hash": "fc2ebde8d395fc20",
+    "count": 25,
+    "lines": [
+      "build.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/dpms.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/error.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/glx.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/internal.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/keysym.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/lib.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/link.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/old_xrandr.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/sync.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xcursor.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xf86vmode.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xfixes.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xft.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xinerama.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xinput.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xlib.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xmu.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xpresent.rs:3-3 LicenseRef-scancode-public-domain",
+      "src/xrandr.rs:3-3 LicenseRef-scancode-public-domain"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-005: Public-domain dedication; file headers: 'These bindings are public domain'; crate declares MIT",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

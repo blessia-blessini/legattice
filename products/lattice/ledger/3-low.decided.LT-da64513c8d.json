@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-da64513c8d",
+  "key": "undeclared-licence|NPM:layout-base|APACHE-2.0",
+  "title": "layout-base 2.0.1 (MIT) contains Apache-2.0 in 2 place(s): source",
+  "evidence": {
+    "package": "NPM::layout-base:2.0.1",
+    "declared": "MIT",
+    "hash": "1e9cff3edbd38dd8",
+    "count": 2,
+    "lines": [
+      "layout-base.js:4327-4527 Apache-2.0",
+      "src/util/SVD.js:13-213 Apache-2.0"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "Apache-2.0",
+    "rationale": "REASON-003: Bundled code under its own licence; util/SVD.js adapted from JamaJS, Apache text in the file; not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

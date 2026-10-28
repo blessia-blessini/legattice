@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "LT-7c66dbb35e",
+  "key": "undeclared-licence|NPM:dompurify|MIT",
+  "title": "dompurify 3.4.17 (Apache-2.0 OR MPL-2.0) contains MIT in 4 place(s): source",
+  "evidence": {
+    "package": "NPM::dompurify:3.4.17",
+    "declared": "Apache-2.0 OR MPL-2.0",
+    "hash": "c4dc08823c2a190a",
+    "count": 4,
+    "lines": [
+      "dist/purify.cjs.js:38-38 MIT",
+      "dist/purify.es.mjs:37-37 MIT",
+      "dist/purify.js:41-41 MIT",
+      "dist/purify.min.js:4-4 MIT"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-003: Bundled code under its own licence; Babel's regenerator-runtime helper inlined in dist (Facebook, MIT); not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

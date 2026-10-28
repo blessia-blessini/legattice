@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-fc1f9ceec9",
+  "key": "undeclared-licence|Crate:rav1e|MIT",
+  "title": "rav1e 0.8.1 (BSD-2-Clause) contains MIT in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::rav1e:0.8.1",
+    "declared": "BSD-2-Clause",
+    "hash": "ec5c56af82eaf956",
+    "count": 1,
+    "lines": [
+      "cbindgen.toml:1-1 MIT"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "BSD-2-Clause",
+    "rationale": "REASON-002: False positive; cbindgen.toml: SPDX line for the C header it generates; not built here",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

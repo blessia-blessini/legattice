@@ -1,0 +1,21 @@
+{
+  "format": 1,
+  "id": "LT-1cccad29bc",
+  "key": "declared-licence|Crate:cssparser-macros|MPL-2.0",
+  "title": "cssparser-macros 0.7.1 is licensed MPL-2.0: no permissive choice (MPL-2.0)",
+  "evidence": {
+    "package": "Crate::cssparser-macros:0.7.1",
+    "declared": "MPL-2.0",
+    "hash": "5147cef604c06761",
+    "count": 0,
+    "lines": []
+  },
+  "decision": {
+    "outcome": "comply",
+    "licence": "",
+    "rationale": "REASON-007: MPL-2.0 used unmodified; unmodified from crates.io, build-time proc-macro; MPL text and source link in Lattice's notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

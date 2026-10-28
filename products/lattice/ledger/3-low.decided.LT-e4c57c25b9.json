@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-e4c57c25b9",
+  "key": "undeclared-licence|Crate:tao|W3C-20150513",
+  "title": "tao 0.37.2 (Apache-2.0) contains W3C-20150513 in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::tao:0.37.2",
+    "declared": "Apache-2.0",
+    "hash": "d70ba2210996d860",
+    "count": 1,
+    "lines": [
+      "src/keyboard.rs:23-58 W3C-20150513"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "W3C-20150513",
+    "rationale": "REASON-003: Bundled code under its own licence; keyboard.rs Key/KeyCode docs from the W3C UI Events spec; not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

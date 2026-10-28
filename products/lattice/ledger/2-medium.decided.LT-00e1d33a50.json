@@ -1,0 +1,21 @@
+{
+  "format": 1,
+  "id": "LT-00e1d33a50",
+  "key": "declared-licence|Crate:option-ext|MPL-2.0",
+  "title": "option-ext 0.2.0 is licensed MPL-2.0: no permissive choice (MPL-2.0)",
+  "evidence": {
+    "package": "Crate::option-ext:0.2.0",
+    "declared": "MPL-2.0",
+    "hash": "75cc9e8c35f13fa2",
+    "count": 0,
+    "lines": []
+  },
+  "decision": {
+    "outcome": "comply",
+    "licence": "",
+    "rationale": "REASON-007: MPL-2.0 used unmodified; unmodified from crates.io via dirs-sys; MPL text and source link in Lattice's notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-c95612b6e3",
+  "key": "no-declared-licence|NPM:khroma|",
+  "title": "khroma 2.1.0 declares no licence; its files say: MIT",
+  "evidence": {
+    "package": "NPM::khroma:2.1.0",
+    "declared": null,
+    "hash": "986854e11ebc96ed",
+    "count": 2,
+    "lines": [
+      "license:1-1 MIT",
+      "license:5-21 MIT"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-006: Licence file names the licence; no licence in package.json; file 'license' is MIT, as in Lattice's policy clarification",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-7961760f9d",
+  "key": "undeclared-licence|Crate:gtk3-macros|LGPL-2.0-OR-LATER",
+  "title": "gtk3-macros 0.18.2 (MIT) contains LGPL-2.0-or-later in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::gtk3-macros:0.18.2",
+    "declared": "MIT",
+    "hash": "f97a1af7c69bae9f",
+    "count": 1,
+    "lines": [
+      "COPYRIGHT:12-13 LGPL-2.0-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-008: Points to another component's licence; COPYRIGHT:12-13 means the GNOME C libraries (LGPL); crate ships none; Linux AppImage handles them",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

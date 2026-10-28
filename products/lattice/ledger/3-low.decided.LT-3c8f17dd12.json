@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-3c8f17dd12",
+  "key": "undeclared-licence|Crate:color_quant|XFIG",
+  "title": "color_quant 1.1.0 (MIT) contains Xfig in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::color_quant:1.1.0",
+    "declared": "MIT",
+    "hash": "1bf9165c2f4e115a",
+    "count": 1,
+    "lines": [
+      "src/lib.rs:42-49 Xfig"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "Xfig",
+    "rationale": "REASON-003: Bundled code under its own licence; NeuQuant by Anthony Dekker, notice must stay intact; not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

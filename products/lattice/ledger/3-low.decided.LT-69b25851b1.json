@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-69b25851b1",
+  "key": "undeclared-licence|Crate:av-scenechange|ISC",
+  "title": "av-scenechange 0.14.1 (MIT) contains ISC in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::av-scenechange:0.14.1",
+    "declared": "MIT",
+    "hash": "a19667f1f74c2189",
+    "count": 1,
+    "lines": [
+      "src/asm/x86/x86inc.asm:11-21 ISC"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "ISC",
+    "rationale": "REASON-003: Bundled code under its own licence; src/asm/x86/x86inc.asm from the x264 project; not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

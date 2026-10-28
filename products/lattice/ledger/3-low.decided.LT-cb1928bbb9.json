@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "id": "LT-cb1928bbb9",
+  "key": "undeclared-licence|NPM:katex|OFL-1.1",
+  "title": "katex 0.18.10 (MIT) contains OFL-1.1 in 27 place(s): source",
+  "evidence": {
+    "package": "NPM::katex:0.18.10",
+    "declared": "MIT",
+    "hash": "3be17fe141f4588f",
+    "count": 27,
+    "lines": [
+      "dist/fonts/KaTeX_AMS-Regular.ttf:182-184 OFL-1.1",
+      "dist/fonts/KaTeX_Caligraphic-Bold.ttf:72-74 OFL-1.1",
+      "dist/fonts/KaTeX_Caligraphic-Regular.ttf:79-81 OFL-1.1",
+      "dist/fonts/KaTeX_Fraktur-Bold.ttf:194-196 OFL-1.1",
+      "dist/fonts/KaTeX_Fraktur-Regular.ttf:174-176 OFL-1.1",
+      "dist/fonts/KaTeX_Main-Bold.ttf:202-204 OFL-1.1",
+      "dist/fonts/KaTeX_Main-BoldItalic.ttf:111-113 OFL-1.1",
+      "dist/fonts/KaTeX_Main-Italic.ttf:96-98 OFL-1.1",
+      "dist/fonts/KaTeX_Main-Regular.ttf:188-190 OFL-1.1",
+      "dist/fonts/KaTeX_Math-BoldItalic.ttf:117-119 OFL-1.1",
+      "dist/fonts/KaTeX_Math-Italic.ttf:118-120 OFL-1.1",
+      "dist/fonts/KaTeX_SansSerif-Bold.ttf:100-102 OFL-1.1",
+      "dist/fonts/KaTeX_SansSerif-Italic.ttf:106-108 OFL-1.1",
+      "dist/fonts/KaTeX_SansSerif-Regular.ttf:145-147 OFL-1.1",
+      "dist/fonts/KaTeX_Script-Regular.ttf:105-107 OFL-1.1",
+      "dist/fonts/KaTeX_Size1-Regular.ttf:72-74 OFL-1.1",
+      "dist/fonts/KaTeX_Size2-Regular.ttf:68-70 OFL-1.1",
+      "dist/fonts/KaTeX_Size3-Regular.ttf:57-59 OFL-1.1",
+      "dist/fonts/KaTeX_Size4-Regular.ttf:61-63 OFL-1.1",
+      "dist/fonts/KaTeX_Typewriter-Regular.ttf:99-101 OFL-1.1"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "OFL-1.1",
+    "rationale": "REASON-003: Bundled code under its own licence; KaTeX fonts (Design Science, Khan Academy), unmodified; OFL not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

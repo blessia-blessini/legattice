@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-c0725baf33",
+  "key": "undeclared-licence|Crate:atk|LGPL-2.0-OR-LATER",
+  "title": "atk 0.18.2 (MIT) contains LGPL-2.0-or-later in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::atk:0.18.2",
+    "declared": "MIT",
+    "hash": "955a50c4cb0b2e84",
+    "count": 1,
+    "lines": [
+      "COPYRIGHT:12-13 LGPL-2.0-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-008: Points to another component's licence; COPYRIGHT:12-13 means the GNOME C libraries (LGPL); crate ships none; Linux AppImage handles them",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

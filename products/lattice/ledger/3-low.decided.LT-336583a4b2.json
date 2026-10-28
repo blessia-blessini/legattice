@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "id": "LT-336583a4b2",
+  "key": "undeclared-licence|Crate:icu_provider|MIT",
+  "title": "icu_provider 2.4.0 (Unicode-3.0) contains MIT in 2 place(s): source",
+  "evidence": {
+    "package": "Crate::icu_provider:2.4.0",
+    "declared": "Unicode-3.0",
+    "hash": "f32e136b588041fb",
+    "count": 2,
+    "lines": [
+      "src/marker.rs:256-256 MIT OR Apache-2.0",
+      "src/marker.rs:258-262 MIT OR Apache-2.0"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-001: Prefer MIT over Apache-2.0; marker.rs reproduces Rust project code under MIT OR Apache-2.0",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "format": 1,
+  "id": "LT-68e84b435f",
+  "key": "undeclared-licence|Crate:v_frame|LICENSEREF-SCANCODE-ALLIANCE-OPEN-MEDIA-PATENT-1.0",
+  "title": "v_frame 0.3.9 (BSD-2-Clause) contains LicenseRef-scancode-alliance-open-media-patent-1.0 in 5 place(s): source",
+  "evidence": {
+    "package": "Crate::v_frame:0.3.9",
+    "declared": "BSD-2-Clause",
+    "hash": "47c2fc4c47ff974a",
+    "count": 5,
+    "lines": [
+      "src/frame.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/lib.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/math.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/pixel.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/plane.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+    "rationale": "REASON-010: AV1 patent licence; rav1e headers; PATENTS 1.2.1(b): text must ship with binaries; not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "LT-688ba4efef",
+  "key": "undeclared-licence|Crate:libm|LICENSEREF-SCANCODE-RED-HAT-ATTRIBUTION",
+  "title": "libm 0.2.16 (MIT) contains LicenseRef-scancode-red-hat-attribution in 4 place(s): source",
+  "evidence": {
+    "package": "Crate::libm:0.2.16",
+    "declared": "MIT",
+    "hash": "055db7b60b042d30",
+    "count": 4,
+    "lines": [
+      "src/math/exp.rs:6-8 LicenseRef-scancode-red-hat-attribution",
+      "src/math/k_tan.rs:6-8 LicenseRef-scancode-red-hat-attribution",
+      "src/math/k_tanf.rs:6-8 LicenseRef-scancode-red-hat-attribution",
+      "src/math/pow.rs:6-8 LicenseRef-scancode-red-hat-attribution"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "SunPro",
+    "rationale": "REASON-003: Bundled code under its own licence; lines 6-8 are Sun's msun notice ('provided this notice is preserved'); in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

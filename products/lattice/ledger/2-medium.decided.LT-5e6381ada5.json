@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "id": "LT-5e6381ada5",
+  "key": "undeclared-licence|Crate:rav1e|LICENSEREF-SCANCODE-ALLIANCE-OPEN-MEDIA-PATENT-1.0",
+  "title": "rav1e 0.8.1 (BSD-2-Clause) contains LicenseRef-scancode-alliance-open-media-patent-1.0 in 132 place(s): source, licence file",
+  "evidence": {
+    "package": "Crate::rav1e:0.8.1",
+    "declared": "BSD-2-Clause",
+    "hash": "b41ad495404a52d9",
+    "count": 132,
+    "lines": [
+      "PATENTS:1-107 LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "build.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/activity.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/channel/by_gop.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/channel/data.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/channel/mod.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/color.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/config/encoder.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/config/mod.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/config/rate.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/config/speedsettings.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/context.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/internal.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/mod.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/test.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/api/util.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/arm/64/cdef_dist.S:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/arm/64/sad.S:5-10 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/arm/64/satd.S:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/arm/64/sse.S:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+    "rationale": "REASON-010: AV1 patent licence; rav1e's files, PATENTS; PATENTS 1.2.1(b): text must ship with binaries; not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

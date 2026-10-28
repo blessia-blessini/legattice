@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "id": "LT-b74830fd65",
+  "key": "undeclared-licence|Crate:av1-grain|LICENSEREF-SCANCODE-ALLIANCE-OPEN-MEDIA-PATENT-1.0",
+  "title": "av1-grain 0.2.5 (BSD-2-Clause) contains LicenseRef-scancode-alliance-open-media-patent-1.0 in 3 place(s): source",
+  "evidence": {
+    "package": "Crate::av1-grain:0.2.5",
+    "declared": "BSD-2-Clause",
+    "hash": "202d16e8570acfb1",
+    "count": 3,
+    "lines": [
+      "src/create.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/lib.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+      "src/parse.rs:3-8 BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "BSD-2-Clause AND LicenseRef-scancode-alliance-open-media-patent-1.0",
+    "rationale": "REASON-010: AV1 patent licence; rav1e headers; PATENTS 1.2.1(b): text must ship with binaries; not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

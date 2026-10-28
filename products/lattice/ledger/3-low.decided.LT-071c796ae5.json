@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-071c796ae5",
+  "key": "undeclared-licence|Crate:rav1e|ISC",
+  "title": "rav1e 0.8.1 (BSD-2-Clause) contains ISC in 1 place(s): source",
+  "evidence": {
+    "package": "Crate::rav1e:0.8.1",
+    "declared": "BSD-2-Clause",
+    "hash": "ebecc5f1a02df545",
+    "count": 1,
+    "lines": [
+      "src/ext/x86/x86inc.asm:11-21 ISC"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "ISC",
+    "rationale": "REASON-003: Bundled code under its own licence; src/ext/x86/x86inc.asm from the x264 project; not yet in notices",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

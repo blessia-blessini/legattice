@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-9853b2460f",
+  "key": "undeclared-licence|Crate:gio|LGPL-2.0-OR-LATER",
+  "title": "gio 0.18.4 (MIT) contains LGPL-2.0-or-later in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::gio:0.18.4",
+    "declared": "MIT",
+    "hash": "f1c16405688f35e7",
+    "count": 1,
+    "lines": [
+      "COPYRIGHT:12-13 LGPL-2.0-or-later"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-008: Points to another component's licence; COPYRIGHT:12-13 means the GNOME C libraries (LGPL); crate ships none; Linux AppImage handles them",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}

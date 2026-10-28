@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-56ad7e6a6f",
+  "key": "undeclared-licence|NPM:mermaid|EPL-1.0",
+  "title": "mermaid 11.17.2 (MIT) contains EPL-1.0 in 1 place(s): source",
+  "evidence": {
+    "package": "NPM::mermaid:11.17.2",
+    "declared": "MIT",
+    "hash": "5e98368e4dcd3c41",
+    "count": 1,
+    "lines": [
+      "dist/mermaid.min.js:3607-3607 Apache-2.0 OR EPL-1.0"
+    ]
+  },
+  "decision": {
+    "outcome": "accept-as",
+    "licence": "Apache-2.0",
+    "rationale": "REASON-002: False positive; no EPL: line 3607 is DOMPurify's 'Apache license 2.0 and Mozilla Public License 2.0'",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
+    "expires": null
+  }
+}
