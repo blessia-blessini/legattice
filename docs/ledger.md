@@ -10,7 +10,7 @@ from this tool.*
 
 ## A decision
 
-`products/lattice/ledger/2-medium.open.LT-c95612b6e3.json`:
+`products/lattice/ledger/2-medium.decided.LT-c95612b6e3.json`:
 
 ```json
 {
@@ -64,10 +64,11 @@ decision. The khroma file above is an example of the format, not a decision.
 
 1. Run the scan (**Actions → Scan (ORT)**). The merge job's summary lists the topics; the results
    artifact holds `topics/drafts/`: one file to fill in for every topic still to decide (names below).
-2. Copy drafts to `products/<product>/ledger/` — as they are, no renaming. One at a time, or all of
-   them at once to work through: a draft counts only once it is **signed** (below).
-3. Fill in `decision`, then sign it: `decidedBy` and `date`. Commit. A decision can go through a pull
-   request so a second person sees it before it counts.
+2. Copy drafts to `products/<product>/ledger/` with their names as they are. One at a time, or all
+   of them at once to work through: a draft counts only once it is **signed** (below).
+3. Fill in `decision`, then sign it: `decidedBy` and `date`. Rename the label in the middle of the
+   file name to `decided` (below). Commit. A decision can go through a pull request so a second
+   person sees it before it counts.
 4. The next scan shows the topic as **closed**.
 
 ### Signed or not
@@ -96,14 +97,23 @@ A draft is named `<severity>.<status>.<topic id>.json`:
 | `2-medium.reopened.LT-c40e4954e2.json` | medium, decided before; the evidence changed or the decision expired |
 | `3-low.pending-removal.LT-….json` | low, decided `remove`, still in the product |
 
-The number in front makes the names sort high, medium, low in any file list. In the ledger only the
-id at the end counts: `LT-c95612b6e3.json` and `2-medium.open.LT-c95612b6e3.json` are the same
-decision. The label is what the topic was when the draft was made — the report has its status now.
+The number in front makes the names sort high, medium, low in any file list.
 
-When a topic reopens, its new draft has a different label (`reopened`) from the decision already in
-the ledger (`open`). Both may stay side by side while you work: per topic, one signed decision and
-one unsigned draft. Once you sign the new one, delete the old — two signed files (or two unsigned
-ones) for one topic are refused, naming both.
+When you sign a draft, rename its label to `decided`: `2-medium.open.LT-c95612b6e3.json` becomes
+`2-medium.decided.LT-c95612b6e3.json`. Then the folder shows at a glance which files are signed and
+which are still drafts. `decided` says that a person decided, not that the topic is closed today — a
+new version of the package can reopen it; the report has the status now. Nothing renames files for
+you, and the scan does not check the label: in the ledger only the id at the end counts, so
+`LT-c95612b6e3.json`, `2-medium.open.LT-c95612b6e3.json` and `2-medium.decided.LT-c95612b6e3.json`
+are the same decision.
+
+When a topic reopens, its new draft (`reopened`) and the decision already in the ledger (`decided`)
+may stay side by side while you work: per topic, one signed decision and one unsigned draft. Once
+you sign the new one, delete the old and give the new one the `decided` label — two signed files (or
+two unsigned ones) for one topic are refused, naming both.
+
+A product may keep a list of reason codes for its rationales next to its ledger, for example
+`products/lattice/ledger/reasons.md`; the scan reads only the `.json` files in the folder.
 
 ## Statuses
 
