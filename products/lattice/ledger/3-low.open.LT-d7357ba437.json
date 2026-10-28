@@ -16,11 +16,11 @@
     ]
   },
   "decision": {
-    "outcome": "",
-    "licence": "",
-    "rationale": "",
-    "decidedBy": "",
-    "date": "",
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-001: Prefer MIT over Apache-2.0; BSD-3 cmake modules in vendor/dbus/cmake; build scripts of bundled libdbus, never built here",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
     "expires": null
   }
 }

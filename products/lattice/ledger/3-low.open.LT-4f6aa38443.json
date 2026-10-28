@@ -13,11 +13,11 @@
     ]
   },
   "decision": {
-    "outcome": "",
-    "licence": "",
-    "rationale": "",
-    "decidedBy": "",
-    "date": "",
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-001: Prefer MIT over Apache-2.0; src/vendor/blake3_reference.rs is BLAKE3 reference code, CC0-1.0 OR Apache-2.0; CC0 asks nothing",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
     "expires": null
   }
 }

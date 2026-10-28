@@ -13,11 +13,11 @@
     ]
   },
   "decision": {
-    "outcome": "",
-    "licence": "",
-    "rationale": "",
-    "decidedBy": "",
-    "date": "",
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-001: Prefer MIT over Apache-2.0; LICENSE.spdx line 2 'DataLicense: CC0-1.0' licenses the SPDX file itself, not the code",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
     "expires": null
   }
 }

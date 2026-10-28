@@ -13,11 +13,11 @@
     ]
   },
   "decision": {
-    "outcome": "",
-    "licence": "",
-    "rationale": "",
-    "decidedBy": "",
-    "date": "",
+    "outcome": "accept-as",
+    "licence": "MIT",
+    "rationale": "REASON-001: Prefer MIT over Apache-2.0; deny.toml line 5 lists Unicode-DFS-2016 in cargo-deny's allow list; config, not a licence grant",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-28",
     "expires": null
   }
 }
