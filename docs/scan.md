@@ -84,6 +84,32 @@ or ran out of time. Its job summary says how many pieces that were.
 A new ORT version starts with empty caches: its results might differ. Timings not seen for 180 days
 are dropped.
 
+## Called from a product's build
+
+A product can run the scan inside its own build, so a release waits for it (Lattice's release build
+does). The workflow is a reusable one:
+
+```yaml
+foss-scan:
+  uses: blessia-blessini/legattice/.github/workflows/scan.yml@main
+  with:
+    repository: blessia-blessini/lattice
+    ref: ${{ github.sha }}
+    block_at: medium
+```
+
+The inputs are the ones of the manual run. `results_artifact` (output) names the artifact with the
+results, among them `topics/topics.md` and `topics/notice-additions.json`; it belongs to the calling
+run. With `block_at`, the job fails while undecided topics reach that severity; decide them in the
+ledger and use **Re-run failed jobs** on the calling run.
+
+Differences from a run started here:
+
+- **Legattice's code and ledger come from `main` as it is when each job starts** — a re-run reads the
+  decisions made in between. (Run here, it is the commit the run was started on.)
+- **The caches are the caller's**: GitHub keeps caches per repository, so the first call from a product
+  starts with empty ones and scans everything (up to ~30 min with 16 shards for Lattice).
+
 ## Code
 
 | File                      | What it does                                                                                                                                                   |

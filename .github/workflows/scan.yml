@@ -82,8 +82,30 @@ on:
         type: choice
         options: [none, high, medium, low]
         default: none
+  # Called from a product's own build (Lattice's release build, docs/scan.md):
+  # the same inputs; the results are an artifact of the calling run.
+  workflow_call:
+    inputs:
+      repository: { type: string, required: true }
+      ref: { type: string, required: true }
+      repository_config: { type: string, required: false, default: 'products/lattice/ort.yml' }
+      package_managers: { type: string, required: false, default: '' }
+      shards: { type: string, required: false, default: '16' }
+      scan: { type: boolean, required: false, default: true }
+      ledger: { type: string, required: false, default: 'products/lattice/ledger' }
+      block_at: { type: string, required: false, default: 'none' }
+    outputs:
+      results_artifact:
+        description: 'Name of the artifact with the results (topics/topics.md, topics/notice-additions.json, reports)'
+        value: ${{ jobs.merge.outputs.results_artifact }}
 
 env:
+  # Legattice itself -- its code and its ledger. Named explicitly: in a run
+  # called from another repository, a plain checkout would fetch the caller.
+  # Called, it is Legattice's main as it is when the job starts, so a re-run
+  # after a decision reads the new ledger; run here, the commit of this run.
+  LEGATTICE_REPOSITORY: blessia-blessini/legattice
+  LEGATTICE_REF: ${{ github.repository == 'blessia-blessini/legattice' && github.sha || 'main' }}
   # ORT 97.2.0, image "run" (all tools, ScanCode included). Update both together.
   ORT_IMAGE: ghcr.io/oss-review-toolkit/ort@sha256:4095b20baea5f51e60d38d841ca3e60faae828aff5f74ae3ce213aa223948230
   ORT_VERSION: '97.2.0'
@@ -113,6 +135,8 @@ jobs:
     - name: 101. Check out Legattice
       uses: actions/checkout@v6
       with:
+        repository: ${{ env.LEGATTICE_REPOSITORY }}
+        ref: ${{ env.LEGATTICE_REF }}
         path: legattice
         persist-credentials: false
 
@@ -220,6 +244,8 @@ jobs:
     - name: 100. Check out Legattice
       uses: actions/checkout@v6
       with:
+        repository: ${{ env.LEGATTICE_REPOSITORY }}
+        ref: ${{ env.LEGATTICE_REF }}
         path: legattice
         persist-credentials: false
 
@@ -303,10 +329,14 @@ jobs:
     if: ${{ !cancelled() && needs.broker.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    outputs:
+      results_artifact: ort-${{ env.ORT_VERSION }}-results
     steps:
     - name: 100. Check out Legattice
       uses: actions/checkout@v6
       with:
+        repository: ${{ env.LEGATTICE_REPOSITORY }}
+        ref: ${{ env.LEGATTICE_REF }}
         path: legattice
         persist-credentials: false
 
