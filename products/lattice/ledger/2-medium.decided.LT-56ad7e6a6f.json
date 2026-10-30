@@ -14,10 +14,10 @@
   },
   "decision": {
     "outcome": "accept-as",
-    "licence": "Apache-2.0",
-    "rationale": "REASON-002: False positive; no EPL: line 3607 is DOMPurify's 'Apache license 2.0 and Mozilla Public License 2.0'",
-    "decidedBy": "Blessia Blessini",
-    "date": "2026-10-28",
+    "licence": "MIT",
+    "rationale": "REASON-009: Not part of what Lattice ships; dist/mermaid.min.js never imported (mermaid.core.mjs is); DOMPurify ships as its own package",
+    "decidedBy": "Blessi Blessini",
+    "date": "2026-10-30",
     "expires": null
   }
 }
