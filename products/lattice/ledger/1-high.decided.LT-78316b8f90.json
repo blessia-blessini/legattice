@@ -2,9 +2,9 @@
   "format": 1,
   "id": "LT-78316b8f90",
   "key": "undeclared-licence|project:https://github.com/blessia-blessini/lattice.git|AGPL-3.0-ONLY",
-  "title": "lattice 0.3.50 (AGPL-3.0-or-later) contains AGPL-3.0-only in 29 place(s): licence file, source",
+  "title": "lattice 0.3.52 (AGPL-3.0-or-later) contains AGPL-3.0-only in 29 place(s): licence file, source",
   "evidence": {
-    "package": "Cargo::lattice:0.3.50",
+    "package": "Cargo::lattice:0.3.52",
     "declared": "AGPL-3.0-or-later",
     "hash": "ec6ba908900f3fd7",
     "count": 29,

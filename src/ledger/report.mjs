@@ -78,7 +78,9 @@ export function renderTopics({ counts, topics, gone, statusCounts }, { limit = I
             + ` Unsigned drafts in the ledger for ${statusCounts.drafting} of them.`
             + ` Closed by the ledger: ${statusCounts.closed}.`
             + ` Not topics: ${counts.mentions} licence mention(s) in READMEs, docs and tests;`
-            + ` ${counts.unidentified} unidentified reference(s) such as "see LICENSE".`,
+            + ` ${counts.unidentified} unidentified reference(s) such as "see LICENSE";`
+            + ` ${counts.ownCode ?? 0} finding(s) of other licences in the product's own code, not checked`
+            + ` (docs/topics.md).`,
         '',
         '*Found by tools, not legal advice. Each topic needs a person\'s decision, recorded in the ledger'
             + ' (docs/ledger.md); drafts/ holds a file to fill in for each topic still to decide.*',

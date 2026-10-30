@@ -63,6 +63,13 @@ describe('renderTopics', () => {
         assert.match(md, /4 topic\(s\) in 5 package\(s\) and 1 project\(s\)\. \*\*To decide: 3\*\* \(1 reopened, 1 pending removal, 1 open: 0 high, 1 medium, 0 low\)\. Unsigned drafts in the ledger for 1 of them\. Closed by the ledger: 1\./);
         assert.match(md, new RegExp(`\\| ${KHROMA.id} \\(draft\\) \\| khroma 2\\.1\\.0 declares no licence`));
         assert.match(md, /not legal advice/);
+        // Counts from before ownCode existed read as 0, never "undefined".
+        assert.match(md, /; 0 finding\(s\) of other licences in the product's own code, not checked \(docs\/topics\.md\)\./);
+    });
+
+    it('reports the own-code findings it does not check', () => {
+        const md = renderTopics({ counts: { ...COUNTS, ownCode: 29 }, ...applyLedger([KHROMA], emptyLedger(), '2026-10-27') });
+        assert.match(md, /; 29 finding\(s\) of other licences in the product's own code, not checked/);
     });
 
     it('lists reopened topics first, with the reason, then removals, open ones, closed ones, and gone decisions', () => {

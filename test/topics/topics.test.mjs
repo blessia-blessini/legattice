@@ -108,7 +108,7 @@ describe('itemTopics', () => {
             ['NOASSERTION', 'src/lib.rs'],
         ]));
         assert.deepEqual(topics, []);
-        assert.deepEqual(counts, { mentions: 2, unidentified: 1 });
+        assert.deepEqual(counts, { mentions: 2, unidentified: 1, ownCode: 0 });
     });
 
     it('keeps the key across versions and changes the evidence hash with the findings', () => {
@@ -131,12 +131,22 @@ describe('itemTopics', () => {
         assert.equal(t.evidenceCount, MAX_EVIDENCE + 5);
     });
 
-    it('does not judge a project by its own declared licence choice', () => {
-        const { topics } = itemTopics(item('NPM::lattice:0.3.50', 'AGPL-3.0-or-later', [
-            ['AGPL-3.0-or-later', 'src/App.tsx'], ['AGPL-3.0-only', 'src/App.tsx'],
+    it('makes no topic for the product\'s own repository, only counts what it does not declare', () => {
+        const { topics, counts } = itemTopics(item('NPM::lattice:0.3.50', 'AGPL-3.0-or-later', [
+            ['AGPL-3.0-or-later', 'src/App.tsx'], ['AGPL-3.0-only', 'src/App.tsx'], ['AGPL-3.0-only', 'LICENSE', 'licence file'],
+            ['GPL-2.0-only', 'src/vendored/x.c'], ['MIT', 'README.md', 'readme or metadata'],
         ], 'project'));
-        assert.deepEqual(topics.map((t) => [t.rule, t.licence, t.key]),
-            [['undeclared-licence', 'AGPL-3.0-only', `undeclared-licence|project:${REPO}|AGPL-3.0-ONLY`]]);
+        assert.deepEqual(topics, []);
+        // AGPL-3.0-only twice and GPL-2.0-only in code; the README is a mention, -or-later is declared.
+        assert.equal(counts.ownCode, 3);
+        assert.equal(counts.mentions, 1);
+    });
+
+    it('still makes the same finding a topic in a package', () => {
+        const { topics, counts } = itemTopics(item('NPM::other:1.0', 'AGPL-3.0-or-later', [['AGPL-3.0-only', 'src/a.js']]));
+        // (An AGPL package also makes a declared-licence topic: no permissive choice.)
+        assert.deepEqual(topics.filter((t) => t.rule === 'undeclared-licence').map((t) => t.licence), ['AGPL-3.0-only']);
+        assert.equal(counts.ownCode, 0);
     });
 });
 
@@ -163,13 +173,14 @@ describe('scannedItems and openTopics', () => {
         cargoView.analyzer.result.projects[0].id = 'Cargo::app:1.0';
         cargoView.scanner.provenances.find((p) => p.package_provenance.vcs_info).id = 'Cargo::app:1.0';
         const { topics, counts } = openTopics([result, cargoView]);
+        // The project's vendored GPL file is counted (ownCode), not a topic.
         assert.deepEqual(topics.map((t) => [t.severity, t.name, t.licence]), [
-            ['high', 'app', 'GPL-2.0-only'],
             ['medium', 'khroma', null],
             ['low', 'katex', 'OFL-1.1'],
         ]);
         assert.equal(counts.projects, 1);
         assert.equal(counts.packages, 2);
+        assert.equal(counts.ownCode, 1);
     });
 
     it('keeps copyright statements and file SHA-1s, with the archive top folder off their paths', () => {

@@ -36,8 +36,11 @@
 //
 // Findings in READMEs, docs, tests and examples are counted as
 // mentions, not topics; unidentified references ("see LICENSE")
-// are counted, not topics. The product's own repository is
-// checked like a package, after its path excludes.
+// are counted, not topics. The product's own repository makes no
+// topics: its maintainer decides about its own code, and its
+// licence headers are misread often enough (AGPL "-or-later" as
+// "-only") to reopen a topic with every release. Licences found in
+// its code that it does not declare are counted (ownCode).
 //
 // Each topic has a key that stays the same across versions (rule,
 // package without version, licence) and an evidence hash that
@@ -173,10 +176,14 @@ function worstClass(ids) {
 //**************************************************************
 // itemTopics
 //**************************************************************
-/** Topics and counts of one package or project (see the rules above). */
+/**
+ * Topics and counts of one package or project (see the rules above). A
+ * project -- the product's own repository -- makes no topics; what would
+ * have been an undeclared-licence topic is counted as ownCode instead.
+ */
 export function itemTopics(item) {
     const topics = [];
-    const counts = { mentions: 0, unidentified: 0 };
+    const counts = { mentions: 0, unidentified: 0, ownCode: 0 };
     const { name, version } = splitId(item.id);
     const label = `${name} ${version}`.trim();
     const codeFindings = item.findings.filter((f) => CODE_PLACES.has(f.place));
@@ -236,6 +243,10 @@ export function itemTopics(item) {
         }
     }
     for (const { leaf, findings } of byLicence.values()) {
+        if (item.kind === 'project') {
+            counts.ownCode += findings.length;
+            continue;
+        }
         const places = [...new Set(findings.map((f) => f.place))].join(', ');
         topics.push(makeTopic({
             rule: 'undeclared-licence',
@@ -263,7 +274,7 @@ export function itemTopics(item) {
  */
 export function openTopics(ortResults) {
     const topics = new Map();
-    const counts = { packages: 0, projects: 0, mentions: 0, unidentified: 0 };
+    const counts = { packages: 0, projects: 0, mentions: 0, unidentified: 0, ownCode: 0 };
     const seenItems = new Set();
     const items = [];
     for (const result of ortResults) {
@@ -276,6 +287,7 @@ export function openTopics(ortResults) {
             const found = itemTopics(item);
             counts.mentions += found.counts.mentions;
             counts.unidentified += found.counts.unidentified;
+            counts.ownCode += found.counts.ownCode;
             for (const topic of found.topics) {
                 if (!topics.has(topic.key)) topics.set(topic.key, topic);
             }

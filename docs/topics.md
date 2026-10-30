@@ -16,11 +16,16 @@ decide. The merge job of **Scan (ORT)** lists them after every scan — in its j
 | **declared licence** | a package's declared licence offers no permissive choice | cssparser — MPL-2.0 only. `MPL-2.0 OR Apache-2.0` is not a topic: Apache-2.0 can be chosen |
 | **undeclared licence** | a licence found in a package's code or licence files that its declared licence does not cover | KaTeX (MIT) — its fonts say SIL Open Font License 1.1 |
 
-The product's own repository is checked like a package against its own declared licence, after the
-excludes in `products/<product>/ort.yml`.
+**The product's own repository makes no topics** (decided 2026-10-30). Its maintainer decides about
+its own code, and ScanCode misreads the usual AGPL header ("version 3 … or any later version") as
+AGPL-3.0-only — a topic that reopened with every release, since the evidence hash holds the version.
+Licences found in its code that it does not declare are only counted ("not checked" in the report),
+after the excludes in `products/<product>/ort.yml`. **Accepted limit:** third-party code copied into
+the product's own tree (a file under another licence pasted into `src/`) is no longer raised here.
 
 ## What is not a topic — only counted
 
+- **Own code:** licences in the product's own repository that it does not declare (above).
 - **Mentions:** licences named in READMEs, docs, tests and examples. A README that says "the logo
   is CC-BY-NC-ND", or a test file holding a GPL text as a sample, says nothing about the code.
   (In Lattice's scan: 271.)
