@@ -2,11 +2,11 @@
   "format": 1,
   "id": "LT-c4100d89cd",
   "key": "undeclared-licence|Crate:utf8_iter|LICENSEREF-SCANCODE-PUBLIC-DOMAIN",
-  "title": "utf8_iter 1.0.4 (Apache-2.0 OR MIT) contains LicenseRef-scancode-public-domain in 1 place(s): licence file",
+  "title": "utf8_iter 1.1.0 (Apache-2.0 OR MIT) contains LicenseRef-scancode-public-domain in 1 place(s): licence file",
   "evidence": {
-    "package": "Crate::utf8_iter:1.0.4",
+    "package": "Crate::utf8_iter:1.1.0",
     "declared": "Apache-2.0 OR MIT",
-    "hash": "5723c004c3f4c733",
+    "hash": "917240698350ed27",
     "count": 1,
     "lines": [
       "COPYRIGHT:19-19 LicenseRef-scancode-public-domain"
@@ -14,10 +14,10 @@
   },
   "decision": {
     "outcome": "accept-as",
-    "licence": "MIT",
-    "rationale": "REASON-001: Prefer MIT over Apache-2.0; COPYRIGHT line 19 dedicates test code to the public domain; tests are not shipped",
+    "licence": "Apache-2.0 OR MIT",
+    "rationale": "REASON-002: False positive; COPYRIGHT line 19 dedicates test code \"when so designated\"; no file in utf8_iter is",
     "decidedBy": "Blessia Blessini",
-    "date": "2026-10-28",
+    "date": "2026-10-31",
     "expires": null
   }
 }

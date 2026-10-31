@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "LT-6739ad3eae",
+  "key": "undeclared-licence|Crate:utf_types|LICENSEREF-SCANCODE-PUBLIC-DOMAIN",
+  "title": "utf_types 1.0.0 (Apache-2.0 OR MIT) contains LicenseRef-scancode-public-domain in 1 place(s): licence file",
+  "evidence": {
+    "package": "Crate::utf_types:1.0.0",
+    "declared": "Apache-2.0 OR MIT",
+    "hash": "18cce1dfedd5c9a6",
+    "count": 1,
+    "lines": [
+      "COPYRIGHT:19-19 LicenseRef-scancode-public-domain"
+    ]
+  },
+  "decision": {
+    "outcome": "not-shipped",
+    "licence": "",
+    "rationale": "REASON-009: Not part of what Lattice ships; COPYRIGHT line 19 covers only test code, the #[cfg(test)] module of utf8.rs (LT-cb62c12080)",
+    "decidedBy": "Blessia Blessini",
+    "date": "2026-10-31",
+    "expires": null
+  }
+}

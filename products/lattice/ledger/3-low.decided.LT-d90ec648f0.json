@@ -2,11 +2,11 @@
   "format": 1,
   "id": "LT-d90ec648f0",
   "key": "undeclared-licence|NPM:@tauri-apps/plugin-dialog|CC0-1.0",
-  "title": "@tauri-apps/plugin-dialog 2.8.3 (Apache-2.0 OR MIT) contains CC0-1.0 in 1 place(s): licence file",
+  "title": "@tauri-apps/plugin-dialog 2.8.4 (Apache-2.0 OR MIT) contains CC0-1.0 in 1 place(s): licence file",
   "evidence": {
-    "package": "NPM:@tauri-apps:plugin-dialog:2.8.3",
+    "package": "NPM:@tauri-apps:plugin-dialog:2.8.4",
     "declared": "Apache-2.0 OR MIT",
-    "hash": "de3032401a9e0f76",
+    "hash": "2b2911613a8fd04f",
     "count": 1,
     "lines": [
       "LICENSE.spdx:2-2 CC0-1.0"
@@ -17,7 +17,7 @@
     "licence": "MIT",
     "rationale": "REASON-001: Prefer MIT over Apache-2.0; LICENSE.spdx line 2 'DataLicense: CC0-1.0' licenses the SPDX file itself, not the code",
     "decidedBy": "Blessia Blessini",
-    "date": "2026-10-28",
+    "date": "2026-10-31",
     "expires": null
   }
 }

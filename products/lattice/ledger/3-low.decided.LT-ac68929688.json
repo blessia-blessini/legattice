@@ -2,11 +2,11 @@
   "format": 1,
   "id": "LT-ac68929688",
   "key": "undeclared-licence|Crate:rfd|APACHE-2.0",
-  "title": "rfd 0.16.1 (MIT) contains Apache-2.0 in 2 place(s): source",
+  "title": "rfd 0.17.2 (MIT) contains Apache-2.0 in 2 place(s): source",
   "evidence": {
-    "package": "Crate::rfd:0.16.1",
+    "package": "Crate::rfd:0.17.2",
     "declared": "MIT",
-    "hash": "78ce7be70bcc04d4",
+    "hash": "6aad9ac46bd3d659",
     "count": 2,
     "lines": [
       "deny.toml:34-34 Apache-2.0",
@@ -18,7 +18,7 @@
     "licence": "MIT",
     "rationale": "REASON-002: False positive; deny.toml lines 34-35 list licences cargo-deny allows; config, not a grant",
     "decidedBy": "Blessia Blessini",
-    "date": "2026-10-28",
+    "date": "2026-10-31",
     "expires": null
   }
 }
