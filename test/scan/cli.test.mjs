@@ -197,8 +197,10 @@ describe('scan workflow steps', () => {
         assert.ok(!fs.readdirSync(at('topics-2', 'drafts')).some((n) => n.includes(chosen.id)));
         assert.equal(fs.readdirSync(at('topics-2', 'drafts')).length, 4);
 
-        const env = { GITHUB_SERVER_URL: 'https://github.com', GITHUB_REPOSITORY: 'owner/legattice', GITHUB_RUN_ID: '42', GITHUB_SHA: 'abc123' };
-        await main([...argv, '--block-at', 'high', '--product-repository', 'owner/product', '--product-ref', 'v1'], { ...quiet, env });
+        const env = { GITHUB_SERVER_URL: 'https://github.com', GITHUB_REPOSITORY: 'owner/legattice', GITHUB_RUN_ID: '42', GITHUB_SHA: 'the-product-commit' };
+        await main([...argv, '--block-at', 'high', '--product-repository', 'owner/product', '--product-ref', 'v1',
+            '--legattice-commit', 'abc123'], { ...quiet, env });
+        // Called from a product, GITHUB_SHA is the product's commit: never recorded as Legattice's.
         // A package without a declared licence settles its own metadata: no addition.
         assert.deepEqual(read(at('topics-2', 'notice-additions.json')), {
             format: 1,

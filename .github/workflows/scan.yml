@@ -443,7 +443,8 @@ jobs:
         [ -n "$LEDGER" ] && ledger_arg=(--ledger "legattice/$LEDGER")
         node legattice/src/scan/cli.mjs topics --scanner-dir out/scanner --managers out/managers.txt \
           --out-dir out/topics "${ledger_arg[@]}" --block-at "$BLOCK_AT" \
-          --product-repository "$PRODUCT_REPOSITORY" --product-ref "$PRODUCT_REF"
+          --product-repository "$PRODUCT_REPOSITORY" --product-ref "$PRODUCT_REF" \
+          --legattice-commit "$(git -C legattice rev-parse HEAD)"
 
     # Also after a failed scan: then from the analyzer result.
     - name: 140. Report

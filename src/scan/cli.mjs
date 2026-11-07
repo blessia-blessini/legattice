@@ -39,6 +39,7 @@
 //            [--ledger L] [--today YYYY-MM-DD]
 //            [--block-at none|high|medium|low]
 //            [--product-repository R] [--product-ref REF]
+//            [--legattice-commit SHA]
 //                                        D/topics.json + D/topics.md:
 //                                        what a person must decide,
 //                                        after the decisions in the
@@ -50,7 +51,8 @@
 //                                        D/notice-additions.json:
 //                                        what its decisions add to the
 //                                        product's notices (R and REF
-//                                        name what was scanned).
+//                                        name what was scanned, SHA
+//                                        the Legattice that ran).
 //                                        Fails when undecided topics
 //                                        reach the block level (after
 //                                        writing).
@@ -306,8 +308,10 @@ function commandTopics(values, { env, log, today }) {
 //**************************************************************
 /**
  * What notice-additions.json was made from: the product repository and
- * ref (options), the day, and on GitHub Actions the Legattice commit
- * and the run. Unknown parts are null.
+ * ref, the Legattice commit that ran (options), the day, and on GitHub
+ * Actions the run. Unknown parts are null. The commit is an option, not
+ * GITHUB_SHA: called from a product's workflow, GITHUB_SHA is the
+ * product's commit.
  */
 function additionsSource(values, env, day) {
     const server = env.GITHUB_SERVER_URL;
@@ -315,7 +319,7 @@ function additionsSource(values, env, day) {
     return {
         product: { repository: values['product-repository'] ?? null, ref: values['product-ref'] ?? null },
         date: day,
-        legattice: env.GITHUB_SHA ?? null,
+        legattice: values['legattice-commit'] ?? null,
         run: server && repo && env.GITHUB_RUN_ID ? `${server}/${repo}/actions/runs/${env.GITHUB_RUN_ID}` : null,
     };
 }
@@ -373,6 +377,7 @@ const OPTIONS = {
     'block-at': { type: 'string' },
     'product-repository': { type: 'string' },
     'product-ref': { type: 'string' },
+    'legattice-commit': { type: 'string' },
 };
 
 

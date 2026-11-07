@@ -53,6 +53,7 @@ Never an addition: open or reopened topics (decide them first), a package that d
 
 | Field | What |
 |---|---|
+| `source.legattice` | the Legattice commit that ran (`--legattice-commit`; the workflow passes the commit it checked out). Never `GITHUB_SHA`: in a run called from the product, that is the product's commit |
 | `package.ecosystem` | `cargo` or `npm` (other ORT package types: the type in lower case) |
 | `licences` | SPDX ids the decision adds, sorted |
 | `files` | every code or licence file the topic was found in: path inside the package, the SHA-1 of the file as scanned (`null` if ORT did not record one), and the line ranges of the finding |
