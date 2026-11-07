@@ -32,6 +32,9 @@
 //                                        "shards" = [1, 2, ...]
 //   shard    --plan F --index I --analyzer-dir D --out-dir D
 //                                        D/<manager>.json + D/runs.tsv
+//   check    --scanner-dir D --managers F
+//                                        fails on any ScanCode error,
+//                                        e.g. a file that timed out
 //   timings  --scanner-dir D --managers F --plan F --out F
 //            [--timings F] [--today YYYY-MM-DD]
 //                                        the updated timings file
@@ -68,7 +71,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { ortConfigYaml } from './ort-config.mjs';
-import { filterAnalyzerResult, parseDryRunManagers, parseManagerList, scanTimings, workUnits } from './ort-result.mjs';
+import { filterAnalyzerResult, parseDryRunManagers, parseManagerList, scanErrors, scanTimings, workUnits } from './ort-result.mjs';
 import { mergeTimings, planScan, renderPlanSummary, shardRuns } from './plan.mjs';
 import { probeSizes } from './sizes.mjs';
 import {
@@ -222,6 +225,23 @@ function commandShard(values, log) {
     writeText(path.join(values['out-dir'], 'runs.tsv'), lines.map((l) => l + '\n').join(''));
 }
 // commandShard END ********************************************
+
+
+//**************************************************************
+// commandCheck
+//**************************************************************
+/** Fails when ScanCode reported an error: that scan is incomplete. */
+function commandCheck(values, log) {
+    requireOptions(values, ['scanner-dir', 'managers']);
+    const errors = readManagers(values.managers).flatMap((manager) =>
+        scanErrors(readJson(path.join(values['scanner-dir'], manager, 'scan-result.json')))
+            .map((e) => `${manager} ${e}`));
+    if (errors.length > 0) {
+        throw new BlockedError(`${errors.length} scan error(s), so the scan is incomplete:\n${errors.join('\n')}`);
+    }
+    log('scan check: no ScanCode errors');
+}
+// commandCheck END ********************************************
 
 
 //**************************************************************
@@ -408,6 +428,7 @@ export async function main(argv, {
         case 'managers': return commandManagers(values, log);
         case 'plan': return commandPlan(values, { env, log, probe });
         case 'shard': return commandShard(values, log);
+        case 'check': return commandCheck(values, log);
         case 'timings': return commandTimings(values, { env, log, today });
         case 'topics': return commandTopics(values, { env, log, today });
         default: throw new UsageError(`unknown command: ${command ?? '(none)'} -- see the head of ${path.basename(fileURLToPath(import.meta.url))}`);

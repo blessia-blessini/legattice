@@ -74,6 +74,9 @@ a run where everything is stored gets one shard.
 every result the shards stored, and scans by itself anything that is missing — a shard that failed,
 or ran out of time. Its job summary says how many pieces that were.
 
+**An incomplete scan fails.** ScanCode may spend 10 minutes on one file. If a file still runs out of
+time, or ScanCode reports any other error, the merge job fails and its results are not cached.
+
 ## What is kept between runs
 
 | Kept                                                            | Where                                              | For                                         |

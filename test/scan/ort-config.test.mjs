@@ -42,9 +42,10 @@ describe('ortConfigYaml', () => {
         assert.match(yaml, /^ {4}storageWriters: \[local\]$/m);
     });
 
-    it('scans the published archive first, on all cores', () => {
+    it('scans the published archive first, on all cores, 10 minutes at most per file', () => {
         const yaml = ortConfigYaml({ processes: 4 });
         assert.match(yaml, /^ {4}sourceCodeOrigins: \[ARTIFACT, VCS\]$/m);
+        assert.match(yaml, /^ {10}commandLine: '--copyright,--license,--info,--strip-root,--timeout,600'$/m);
         assert.match(yaml, /^ {10}commandLineNonConfig: '--processes,4'$/m);
     });
 

@@ -266,3 +266,21 @@ export function scanTimings(ortResult) {
     return timings;
 }
 // scanTimings END *********************************************
+
+
+//**************************************************************
+// scanErrors
+//**************************************************************
+/**
+ * The errors ScanCode reported in a scan result, one line each -- among
+ * them every file that ran out of --timeout and was not fully scanned.
+ * An issue without a severity counts as an error: when unsure, fail.
+ */
+export function scanErrors(ortResult) {
+    const results = ortResult?.scanner?.scan_results;
+    if (!Array.isArray(results)) throw new Error('not an ORT scan result');
+    return results.flatMap((r) => (r.summary?.issues ?? [])
+        .filter((issue) => (issue.severity ?? 'ERROR') === 'ERROR')
+        .map((issue) => `${provenanceKey(r.provenance) ?? 'unknown source'}: ${issue.message}`));
+}
+// scanErrors END **********************************************

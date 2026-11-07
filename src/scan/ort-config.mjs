@@ -68,6 +68,11 @@ function localFileStorage(directory, indent) {
  *   and for scanning, where the managers no longer matter).
  * - sourceCodeOrigins [ARTIFACT, VCS]: scan the published package archive
  *   (what ships) and fall back to the repository only without one.
+ * - ScanCode --timeout 600: a file may take 10 minutes, twice ORT's
+ *   default (mermaid's bundle came close to it). The other four flags are
+ *   ORT's defaults, which commandLine replaces. Unlike "NonConfig" options
+ *   this changes the configuration, so results stored with 300 s are not
+ *   reused.
  * - ScanCode --processes 4: a hosted runner has 4 cores. "NonConfig"
  *   options do not change the findings, so stored results stay valid.
  * - All four storages live under STORAGE_ROOT: scan results, file lists,
@@ -103,6 +108,7 @@ export function ortConfigYaml({ manager = null, storageRoot = STORAGE_ROOT, proc
         '    config:',
         '      ScanCode:',
         '        options:',
+        "          commandLine: '--copyright,--license,--info,--strip-root,--timeout,600'",
         `          commandLineNonConfig: '--processes,${processes}'`,
         '    storages:',
         '      local:',

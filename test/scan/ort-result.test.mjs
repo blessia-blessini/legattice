@@ -25,7 +25,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-    checkManagerName, filterAnalyzerResult, parseDryRunManagers, parseManagerList, provenanceKey, scanTimings, workUnits,
+    checkManagerName, filterAnalyzerResult, parseDryRunManagers, parseManagerList, provenanceKey, scanErrors, scanTimings, workUnits,
 } from '../../src/scan/ort-result.mjs';
 import {
     analyzerResult, artifactProvenance, pkg, project, REPO, repositoryProvenance, REVISION, scanResult,
@@ -189,5 +189,22 @@ describe('scanTimings', () => {
 
     it('refuses a file without a scan result', () => {
         assert.throws(() => scanTimings(analyzerResult()), /not an ORT scan result/);
+    });
+});
+
+describe('scanErrors', () => {
+    it('lists ScanCode errors, a missing severity included, and ignores warnings', () => {
+        const result = scanResult({ scans: [{ id: 'NPM::mermaid:11', provenance: artifactProvenance('https://x/m.tgz'), start: 0, end: 1 }] });
+        assert.deepEqual(scanErrors(result), []);
+        result.scanner.scan_results[0].summary.issues = [
+            { severity: 'ERROR', message: "ERROR: Timeout after 600 seconds while scanning file 'm.min.js'." },
+            { message: 'no severity' },
+            { severity: 'WARNING', message: 'only a warning' },
+        ];
+        assert.deepEqual(scanErrors(result), [
+            "artifact:https://x/m.tgz: ERROR: Timeout after 600 seconds while scanning file 'm.min.js'.",
+            'artifact:https://x/m.tgz: no severity',
+        ]);
+        assert.throws(() => scanErrors({}), /not an ORT scan result/);
     });
 });

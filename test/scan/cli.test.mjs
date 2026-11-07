@@ -153,6 +153,16 @@ describe('scan workflow steps', () => {
         assert.match(fs.readFileSync(at('timings-summary.md'), 'utf8'), /\*\*1 result\(s\) were scanned by this merge job\*\*/);
     });
 
+    it('check: passes a clean scan, fails one where a file timed out', async () => {
+        await main(['check', '--scanner-dir', at('scanner'), '--managers', at('managers.txt')], quiet);
+        const npm = read(at('scanner', 'NPM', 'scan-result.json'));
+        npm.scanner.scan_results[0].summary.issues = [{ severity: 'ERROR', message: 'Timeout after 600 seconds' }];
+        write(at('scanner-bad', 'NPM', 'scan-result.json'), npm);
+        fs.writeFileSync(at('npm-only.txt'), 'NPM\n');
+        await assert.rejects(main(['check', '--scanner-dir', at('scanner-bad'), '--managers', at('npm-only.txt')], quiet),
+            (e) => e instanceof BlockedError && /1 scan error\(s\)/.test(e.message) && /^NPM .*Timeout after 600/m.test(e.message));
+    });
+
     it('plan: the next run counts stored units as lookups', async () => {
         await main(['plan', '--analyzer-dir', at('analyzer'), '--managers', at('managers.txt'), '--max-shards', '16',
             '--timings', at('timings', 'timings.json'), '--out', at('plan-2.json')], { ...quiet, probe: fakeProbe });

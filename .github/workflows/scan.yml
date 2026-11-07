@@ -399,6 +399,7 @@ jobs:
             || { echo "::error::scan of $manager failed"; failed=1; }
           echo "::endgroup::"
         done < out/managers.txt
+        node legattice/src/scan/cli.mjs check --scanner-dir out/scanner --managers out/managers.txt || failed=1
         exit $failed
 
     - name: 135. Record the scan times
@@ -409,9 +410,10 @@ jobs:
         node legattice/src/scan/cli.mjs timings --scanner-dir out/scanner --managers out/managers.txt \
           --plan out/plan.json --timings timings/timings.json --out timings/timings.json
 
-    # Also after a failed or cut-off scan: what was stored is not lost.
+    # Only after a clean scan: a file that timed out must be scanned again,
+    # not reused from the cache.
     - name: 136. Save the scan results for the next run
-      if: always() && inputs.scan
+      if: inputs.scan
       uses: actions/cache/save@v5
       with:
         path: cache
