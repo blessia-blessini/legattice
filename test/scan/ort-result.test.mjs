@@ -187,6 +187,14 @@ describe('scanTimings', () => {
         assert.deepEqual(scanTimings(result).fresh, { count: 1, seconds: 60 });
     });
 
+    it('counts the sources, and with `since` those scanned from then on', () => {
+        assert.equal(scanTimings(result).sources, 3);
+        assert.equal(scanTimings(result).since, null);
+        // Start of the whole scan run, before the shards: a.tgz (-500 s) counts, the project (-900 s) does not.
+        assert.deepEqual(scanTimings(result, { since: '2026-10-26T09:50:00Z' }).since, { count: 2, seconds: 64 });
+        assert.equal(scanTimings(result, { since: 'not a time' }).since, null);
+    });
+
     it('refuses a file without a scan result', () => {
         assert.throws(() => scanTimings(analyzerResult()), /not an ORT scan result/);
     });

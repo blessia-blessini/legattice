@@ -37,6 +37,11 @@
 #              ledger (docs/ledger.md), writes the reports
 #   How it works, in plain words: docs/scan.md.
 #
+#   Earlier results come from the "ort-store" artifact of the newest
+#   clean scan of the same repository, from any branch or tag
+#   (src/scan/store.mjs). When none can be used, the broker warns and
+#   says why: everything is scanned again.
+#
 #   ORT is a separate program (Apache-2.0), run from its container
 #   image pinned by digest; nothing of ORT becomes part of Legattice.
 #   Node runs Legattice's own steps (src/scan/, built-ins only).
@@ -45,6 +50,9 @@ name: Scan (ORT)
 
 permissions:
   contents: read
+  # Find and download the store of earlier results ("ort-store"). A calling
+  # workflow must grant it as well, or GitHub does not start this one.
+  actions: read
 
 on:
   workflow_dispatch:
@@ -73,6 +81,10 @@ on:
         description: 'Scan the sources with ScanCode (off: analyzer and reports only)'
         type: boolean
         default: true
+      fresh:
+        description: 'Scan everything again: do not use the earlier scan results (ort-store); the new ones are kept'
+        type: boolean
+        default: false
       ledger:
         description: 'Folder of decisions in this repo (docs/ledger.md); empty for none'
         required: false
@@ -92,6 +104,7 @@ on:
       package_managers: { type: string, required: false, default: '' }
       shards: { type: string, required: false, default: '16' }
       scan: { type: boolean, required: false, default: true }
+      fresh: { type: boolean, required: false, default: false }
       ledger: { type: string, required: false, default: 'products/lattice/ledger' }
       block_at: { type: string, required: false, default: 'none' }
     outputs:
@@ -123,6 +136,8 @@ jobs:
     timeout-minutes: 60
     outputs:
       shards: ${{ steps.plan.outputs.shards }}
+      # Run whose "ort-store" every job takes up; empty: none, scan all.
+      store_run_id: ${{ steps.store.outputs.run_id }}
     steps:
     - name: 100. Check out the product
       uses: actions/checkout@v6
@@ -200,15 +215,47 @@ jobs:
           echo "::endgroup::"
         done < out/managers.txt
 
-    # Times of earlier scans: what is already stored, how fast each package
-    # type scans. Small, so the broker does not restore the stored results.
-    - name: 135. Restore earlier scan times
-      uses: actions/cache/restore@v5
-      with:
-        path: timings
-        key: ort-timings-${{ env.ORT_VERSION }}-${{ github.run_id }}
-        restore-keys: ort-timings-${{ env.ORT_VERSION }}-
+    # Earlier results: the newest "ort-store" artifact of this repository
+    # from a trusted run (push, by hand, schedule -- never a fork or a pull
+    # request). A failed lookup only makes the scan slower: never an error.
+    # With "fresh" none is looked for: everything is scanned again, and the
+    # job summary says it was asked for.
+    - name: 135. Find the earlier scan results
+      id: store-find
+      if: inputs.scan
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        FRESH: ${{ inputs.fresh }}
+      run: |
+        set -euo pipefail
+        fresh_arg=()
+        [ "$FRESH" = "true" ] && fresh_arg=(--fresh)
+        node legattice/src/scan/cli.mjs store-find --out out/store-find.json "${fresh_arg[@]}"
 
+    - name: 136. Download the earlier scan results
+      if: inputs.scan && steps.store-find.outputs.run_id != ''
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: ort-store
+        run-id: ${{ steps.store-find.outputs.run_id }}
+        github-token: ${{ github.token }}
+        path: store-in
+
+    # Used only when it arrived and fits this scan (ORT version, ScanCode
+    # options). Otherwise: a warning and the reason in the job summary.
+    - name: 137. Check the earlier scan results
+      id: store
+      if: inputs.scan
+      shell: bash
+      run: |
+        set -euo pipefail
+        node legattice/src/scan/cli.mjs store-use --find out/store-find.json --store-dir store-in \
+          --ort-version "$ORT_VERSION" --out out/store-status.json
+
+    # The timings of the store: what is already stored, how fast each
+    # package type scans. None (no store used): everything is new work.
     - name: 140. Plan the shards
       id: plan
       shell: bash
@@ -217,7 +264,7 @@ jobs:
       run: |
         set -euo pipefail
         node legattice/src/scan/cli.mjs plan --analyzer-dir out/analyzer --managers out/managers.txt \
-          --timings timings/timings.json --max-shards "$SHARDS" --out out/plan.json
+          --timings store-in/timings/timings.json --max-shards "$SHARDS" --out out/plan.json
 
     - name: 150. Hand the plan to the shards
       uses: actions/upload-artifact@v7
@@ -260,13 +307,18 @@ jobs:
         name: plan
         path: out
 
-    # Results of earlier runs: a unit already scanned is a lookup.
-    - name: 115. Restore earlier scan results
-      uses: actions/cache/restore@v5
+    # Results of earlier runs, the store the broker chose: a unit already
+    # scanned is a lookup. Should it not arrive, this shard scans those
+    # units itself -- slower, not wrong.
+    - name: 115. Get the earlier scan results
+      if: needs.broker.outputs.store_run_id != ''
+      continue-on-error: true
+      uses: actions/download-artifact@v8
       with:
-        path: cache
-        key: ort-scan-${{ env.ORT_VERSION }}-${{ github.run_id }}
-        restore-keys: ort-scan-${{ env.ORT_VERSION }}-
+        name: ort-store
+        run-id: ${{ needs.broker.outputs.store_run_id }}
+        github-token: ${{ github.token }}
+        path: .
 
     # The marker separates what this shard makes from what it restored:
     # only new files are handed on (step 140).
@@ -351,21 +403,17 @@ jobs:
         name: plan
         path: out
 
-    - name: 114. Restore earlier scan times
-      if: inputs.scan
-      uses: actions/cache/restore@v5
+    # The store the broker chose: earlier results (cache/) and times
+    # (timings/). Should it not arrive, step 130 scans what is missing.
+    - name: 115. Get the earlier scan results
+      if: inputs.scan && needs.broker.outputs.store_run_id != ''
+      continue-on-error: true
+      uses: actions/download-artifact@v8
       with:
-        path: timings
-        key: ort-timings-${{ env.ORT_VERSION }}-${{ github.run_id }}
-        restore-keys: ort-timings-${{ env.ORT_VERSION }}-
-
-    - name: 115. Restore earlier scan results
-      if: inputs.scan
-      uses: actions/cache/restore@v5
-      with:
-        path: cache
-        key: ort-scan-${{ env.ORT_VERSION }}-${{ github.run_id }}
-        restore-keys: ort-scan-${{ env.ORT_VERSION }}-
+        name: ort-store
+        run-id: ${{ needs.broker.outputs.store_run_id }}
+        github-token: ${{ github.token }}
+        path: .
 
     # Missing shard results are no error here: step 130 scans them.
     - name: 116. Add the shards' results
@@ -408,23 +456,39 @@ jobs:
       run: |
         set -euo pipefail
         node legattice/src/scan/cli.mjs timings --scanner-dir out/scanner --managers out/managers.txt \
-          --plan out/plan.json --timings timings/timings.json --out timings/timings.json
+          --plan out/plan.json --timings timings/timings.json --out timings/timings.json \
+          --store-status out/store-status.json
 
     # Only after a clean scan: a file that timed out must be scanned again,
-    # not reused from the cache.
-    - name: 136. Save the scan results for the next run
+    # not reused. The store holds everything this run knows -- the store it
+    # started from, plus what the shards and this job scanned -- and is
+    # what the next scan of this repository takes up, from any branch or
+    # tag. store.json says which ORT and ScanCode options made it.
+    - name: 136. Describe the scan results for the next run
       if: inputs.scan
-      uses: actions/cache/save@v5
-      with:
-        path: cache
-        key: ort-scan-${{ env.ORT_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
+      shell: bash
+      env:
+        PRODUCT_REPOSITORY: ${{ inputs.repository }}
+        PRODUCT_REF: ${{ inputs.ref }}
+      run: |
+        set -euo pipefail
+        node legattice/src/scan/cli.mjs store-meta --ort-version "$ORT_VERSION" --ort-image "$ORT_IMAGE" \
+          --product-repository "$PRODUCT_REPOSITORY" --product-ref "$PRODUCT_REF" --out store.json
 
-    - name: 137. Save the scan times for the next plan
+    # overwrite: a re-run of this run replaces its own store.
+    - name: 137. Keep the scan results for the next run
       if: inputs.scan
-      uses: actions/cache/save@v5
+      uses: actions/upload-artifact@v7
       with:
-        path: timings
-        key: ort-timings-${{ env.ORT_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
+        name: ort-store
+        path: |
+          cache/
+          timings/
+          store.json
+        retention-days: 90
+        overwrite: true
+        include-hidden-files: true
+        if-no-files-found: error
 
     # What a person must decide, after the decisions in the ledger: in
     # the job summary and in out/topics/ (drafts/: a file to fill in per
