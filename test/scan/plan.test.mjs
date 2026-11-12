@@ -171,6 +171,15 @@ describe('planScan and shardRuns', () => {
         assert.match(md, /\| NPM::big:1 \| 14\.4 min \| size \|/);
         assert.match(md, /project \(Cargo, NPM\)/);
     });
+
+    it('says so when earlier results were used yet most units are new', () => {
+        // This plan has no stored unit at all.
+        assert.match(renderPlanSummary(plan, { earlier: true }), /\*\*Most of this scan is new work:\*\* 4 of 4 units/);
+        // Without earlier results the store summary has said why: no second line here.
+        assert.doesNotMatch(renderPlanSummary(plan), /Most of this scan/);
+        const mostlyStored = { ...plan, units: plan.units.map((u, i) => ({ ...u, basis: i === 0 ? 'size' : 'stored' })) };
+        assert.doesNotMatch(renderPlanSummary(mostlyStored, { earlier: true }), /Most of this scan/);
+    });
 });
 
 describe('mergeTimings', () => {

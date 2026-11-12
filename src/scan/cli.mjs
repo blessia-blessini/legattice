@@ -37,7 +37,24 @@
 //                                        e.g. a file that timed out
 //   timings  --scanner-dir D --managers F --plan F --out F
 //            [--timings F] [--today YYYY-MM-DD]
-//                                        the updated timings file
+//            [--store-status F]          the updated timings file; with
+//                                        the store status, also how many
+//                                        results this run scanned
+//   store-find --out F                   the newest trusted store of
+//                                        earlier results (store.mjs) of
+//                                        GITHUB_REPOSITORY; GitHub output
+//                                        "run_id" (empty: none)
+//   store-use  --find F --store-dir D --ort-version V --out F
+//                                        checks the store downloaded to
+//                                        D; F: the status (used or why
+//                                        not); removes D when not used;
+//                                        warns when everything is
+//                                        scanned again; GitHub output
+//                                        "run_id" (empty: not used)
+//   store-meta --ort-version V --out F [--ort-image I]
+//            [--product-repository R] [--product-ref REF]
+//                                        store.json for the store this
+//                                        run leaves behind
 //   topics   --scanner-dir D --managers F --out-dir D
 //            [--ledger L] [--today YYYY-MM-DD]
 //            [--block-at none|high|medium|low]
@@ -70,10 +87,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { ortConfigYaml } from './ort-config.mjs';
+import { ortConfigYaml, SCANCODE_OPTIONS } from './ort-config.mjs';
 import { filterAnalyzerResult, parseDryRunManagers, parseManagerList, scanErrors, scanTimings, workUnits } from './ort-result.mjs';
 import { mergeTimings, planScan, renderPlanSummary, shardRuns } from './plan.mjs';
 import { probeSizes } from './sizes.mjs';
+import {
+    annotation, checkStore, findStore, githubApi, isRepository, REASONS, reasonText, renderStoreSummary, STORE_FILE,
+    STORE_FORMAT, storeDescription,
+} from './store.mjs';
 import {
     applyLedger, blockingTopics, checkLedger, draftEntry, draftFileName, emptyLedger, isDate, LedgerError, UNDECIDED,
 } from '../ledger/ledger.mjs';
@@ -198,7 +219,7 @@ async function commandPlan(values, { env, log, probe }) {
     const sizes = await probe(urls);
     const plan = planScan({ units, timings, sizes, maxShards });
     writeJson(values.out, plan);
-    const summary = renderPlanSummary(plan);
+    const summary = renderPlanSummary(plan, { earlier: timings !== null });
     log(summary);
     appendGitHub(env, 'GITHUB_STEP_SUMMARY', summary + '\n');
     appendGitHub(env, 'GITHUB_OUTPUT', `shards=${JSON.stringify(plan.shards.map((s) => s.index))}\n`);
@@ -249,8 +270,14 @@ function commandCheck(values, log) {
 //**************************************************************
 function commandTimings(values, { env, log, today }) {
     requireOptions(values, ['scanner-dir', 'managers', 'plan', 'out']);
+    // Only for the summary line: a missing status (a scan without the broker's
+    // store check) leaves that line out, never fails the timings.
+    const status = values['store-status'] !== undefined && fs.existsSync(values['store-status'])
+        ? readJson(values['store-status'])
+        : null;
+    const since = status?.startedAt ?? null;
     const measured = readManagers(values.managers).map((manager) =>
-        scanTimings(readJson(path.join(values['scanner-dir'], manager, 'scan-result.json'))));
+        scanTimings(readJson(path.join(values['scanner-dir'], manager, 'scan-result.json')), { since }));
     const timings = mergeTimings({
         previous: readTimings(values.timings, log),
         measured,
@@ -264,6 +291,7 @@ function commandTimings(values, { env, log, today }) {
     const summary = [
         '## Scan times',
         '',
+        ...(status === null ? [] : [storeOutcomeLine(status, measured), '']),
         `${Object.keys(timings.units).length} timings kept for the next plan.`,
         fresh.count === 0
             ? 'Every result came from the shards or earlier runs.'
@@ -275,6 +303,119 @@ function commandTimings(values, { env, log, today }) {
     appendGitHub(env, 'GITHUB_STEP_SUMMARY', summary + '\n');
 }
 // commandTimings END ******************************************
+
+
+//**************************************************************
+// storeOutcomeLine
+//**************************************************************
+/**
+ * One summary line for the merge job: how many results this run scanned
+ * and how many came from earlier runs, and where those came from.
+ */
+function storeOutcomeLine(status, measured) {
+    const sources = measured.reduce((sum, m) => sum + m.sources, 0);
+    const scanned = measured.reduce((sum, m) => sum + (m.since?.count ?? 0), 0);
+    const seconds = measured.reduce((sum, m) => sum + (m.since?.seconds ?? 0), 0);
+    const counts = `${scanned} of ${sources} result(s) were scanned in this run (${(seconds / 60).toFixed(1)} min),`
+        + ` ${sources - scanned} came from earlier runs.`;
+    return status.used
+        ? `${counts} Earlier results: run ${status.run.runId}.`
+        : `${counts} **No earlier results were used:** ${reasonText(status)}`;
+}
+// storeOutcomeLine END ****************************************
+
+
+//**************************************************************
+// commandStoreFind
+//**************************************************************
+/**
+ * Looks for the newest trusted store of earlier results. A failed lookup
+ * is not an error of the scan -- it only makes it slower -- so it is
+ * recorded as the reason, never thrown.
+ */
+async function commandStoreFind(values, { env, log, github }) {
+    requireOptions(values, ['out']);
+    const repository = env.GITHUB_REPOSITORY;
+    if (!isRepository(repository)) throw new UsageError(`GITHUB_REPOSITORY must be owner/name, not ${repository ?? '(unset)'}`);
+    let result;
+    try {
+        result = await findStore({ api: github ?? githubApi({ env }), repository });
+    } catch (e) {
+        result = { found: null, reason: REASONS.LOOKUP_FAILED, detail: { message: e.message } };
+    }
+    writeJson(values.out, { format: STORE_FORMAT, repository, ...result });
+    log(result.found
+        ? `earlier scan results: run ${result.found.runId} (${result.found.event}, ${result.found.ref ?? 'no ref'})`
+        : `no earlier scan results: ${result.reason}`);
+    appendGitHub(env, 'GITHUB_OUTPUT', `run_id=${result.found?.runId ?? ''}\n`);
+}
+// commandStoreFind END ****************************************
+
+
+//**************************************************************
+// commandStoreUse
+//**************************************************************
+/**
+ * Decides whether the store found by store-find, downloaded to
+ * --store-dir, is used: it must have arrived and fit this scan (ORT
+ * version, ScanCode options). Writes the status, the job summary and,
+ * when everything is scanned again, a warning with the reason. A store
+ * not used is removed, so nothing after reads it by mistake.
+ */
+function commandStoreUse(values, { env, log, now }) {
+    requireOptions(values, ['find', 'store-dir', 'ort-version', 'out']);
+    const find = readJson(values.find);
+    const storeDir = values['store-dir'];
+    const run = find.found ?? null;
+    let reason = find.reason ?? (run ? null : REASONS.NONE);
+    let detail = find.detail ?? {};
+    if (run) {
+        if (!fs.existsSync(storeDir)) {
+            reason = REASONS.DOWNLOAD_FAILED;
+            detail = {};
+        } else {
+            let description = null;
+            try {
+                description = readJson(path.join(storeDir, STORE_FILE));
+            } catch {
+                description = null;
+            }
+            const problem = checkStore(description, { ortVersion: values['ort-version'], scancodeOptions: SCANCODE_OPTIONS });
+            if (problem) ({ reason, detail } = problem);
+        }
+    }
+    const used = run !== null && reason === null;
+    if (!used) fs.rmSync(storeDir, { recursive: true, force: true });
+    const status = { format: STORE_FORMAT, startedAt: now(), repository: find.repository ?? null, used, run, reason, detail };
+    writeJson(values.out, status);
+    const summary = renderStoreSummary(status);
+    log(summary);
+    if (!used) log(annotation('warning', 'Full scan', `Everything is scanned again: ${reasonText(status)}`));
+    appendGitHub(env, 'GITHUB_STEP_SUMMARY', summary + '\n');
+    appendGitHub(env, 'GITHUB_OUTPUT', `run_id=${used ? run.runId : ''}\n`);
+}
+// commandStoreUse END *****************************************
+
+
+//**************************************************************
+// commandStoreMeta
+//**************************************************************
+/** store.json for the store this run leaves behind. */
+function commandStoreMeta(values, { env, now }) {
+    requireOptions(values, ['ort-version', 'out']);
+    const server = env.GITHUB_SERVER_URL;
+    const repo = env.GITHUB_REPOSITORY;
+    writeJson(values.out, storeDescription({
+        ortVersion: values['ort-version'],
+        scancodeOptions: SCANCODE_OPTIONS,
+        ortImage: values['ort-image'] ?? null,
+        repository: values['product-repository'] ?? null,
+        ref: values['product-ref'] ?? null,
+        run: server && repo && env.GITHUB_RUN_ID ? `${server}/${repo}/actions/runs/${env.GITHUB_RUN_ID}` : null,
+        at: now(),
+    }));
+}
+// commandStoreMeta END ****************************************
 
 
 //**************************************************************
@@ -398,6 +539,11 @@ const OPTIONS = {
     'product-repository': { type: 'string' },
     'product-ref': { type: 'string' },
     'legattice-commit': { type: 'string' },
+    'store-status': { type: 'string' },
+    find: { type: 'string' },
+    'store-dir': { type: 'string' },
+    'ort-version': { type: 'string' },
+    'ort-image': { type: 'string' },
 };
 
 
@@ -406,13 +552,16 @@ const OPTIONS = {
 //**************************************************************
 /**
  * Runs one command. `deps` replaces the outside world in tests: env,
- * log, the size probe and today's date.
+ * log, the size probe, today's date, the clock and the GitHub API
+ * (`github`: route -> JSON; null: the real one, see githubApi).
  */
 export async function main(argv, {
     env = process.env,
     log = console.log,
     probe = probeSizes,
     today = new Date().toISOString().slice(0, 10),
+    now = () => new Date().toISOString(),
+    github = null,
 } = {}) {
     let parsed;
     try {
@@ -431,6 +580,9 @@ export async function main(argv, {
         case 'check': return commandCheck(values, log);
         case 'timings': return commandTimings(values, { env, log, today });
         case 'topics': return commandTopics(values, { env, log, today });
+        case 'store-find': return commandStoreFind(values, { env, log, github });
+        case 'store-use': return commandStoreUse(values, { env, log, now });
+        case 'store-meta': return commandStoreMeta(values, { env, now });
         default: throw new UsageError(`unknown command: ${command ?? '(none)'} -- see the head of ${path.basename(fileURLToPath(import.meta.url))}`);
     }
 }

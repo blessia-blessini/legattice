@@ -221,23 +221,30 @@ function secondsBetween(start, end) {
  * - packages: { id: { seconds } } -- seconds 0 for a package ORT did not
  *   scan at all (excluded scope, no source origins, metadata only).
  * - projects: { repository url: { seconds, revision } }
+ * - sources: how many scanned sources (archives, repositories) there are.
+ * - since: with `since` (a timestamp, the start of the whole scan run),
+ *   { count, seconds } of the sources scanned from then on, by the
+ *   shards or the merge job; the rest came from earlier runs. Else null.
  */
-export function scanTimings(ortResult) {
+export function scanTimings(ortResult, { since = null } = {}) {
     const scanner = ortResult?.scanner;
     if (!scanner || !Array.isArray(scanner.scan_results) || !Array.isArray(scanner.provenances)) {
         throw new Error('not an ORT scan result');
     }
     const content = analyzerContent('scan', ortResult);
     const runStart = Date.parse(scanner.start_time);
+    const sinceMs = since === null ? NaN : Date.parse(since);
 
     const bySource = new Map();
     for (const result of scanner.scan_results) {
         const key = provenanceKey(result.provenance);
         const seconds = secondsBetween(result.summary?.start_time, result.summary?.end_time);
         if (key === null || seconds === null) continue;
-        const fresh = Date.parse(result.summary.start_time) >= runStart;
-        const known = bySource.get(key) ?? { seconds: 0, fresh: false };
-        bySource.set(key, { seconds: known.seconds + seconds, fresh: known.fresh || fresh });
+        const startMs = Date.parse(result.summary.start_time);
+        const fresh = startMs >= runStart;
+        const recent = startMs >= sinceMs;
+        const known = bySource.get(key) ?? { seconds: 0, fresh: false, recent: false };
+        bySource.set(key, { seconds: known.seconds + seconds, fresh: known.fresh || fresh, recent: known.recent || recent });
     }
 
     const projects = new Map(content.projects.map((p) => [p.id, p]));
@@ -262,6 +269,16 @@ export function scanTimings(ortResult) {
         if (!scanned.fresh) continue;
         timings.fresh.count += 1;
         timings.fresh.seconds += Math.round(scanned.seconds);
+    }
+    timings.sources = bySource.size;
+    timings.since = null;
+    if (Number.isFinite(sinceMs)) {
+        timings.since = { count: 0, seconds: 0 };
+        for (const scanned of bySource.values()) {
+            if (!scanned.recent) continue;
+            timings.since.count += 1;
+            timings.since.seconds += Math.round(scanned.seconds);
+        }
     }
     return timings;
 }

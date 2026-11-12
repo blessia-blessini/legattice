@@ -153,6 +153,29 @@ describe('scan workflow steps', () => {
         assert.match(fs.readFileSync(at('timings-summary.md'), 'utf8'), /\*\*1 result\(s\) were scanned by this merge job\*\*/);
     });
 
+    it('timings: with the store status, says how much this run scanned and where the rest came from', async () => {
+        const argv = ['timings', '--scanner-dir', at('scanner'), '--managers', at('managers.txt'), '--plan', at('plan.json'),
+            '--timings', at('no-timings-yet.json'), '--out', at('timings-s', 'timings.json'), '--today', '2026-10-26'];
+        // Broker started at the scan run's start: only the result 10 s later is this run's.
+        write(at('status-used.json'), { format: 1, startedAt: '2026-10-26T10:00:00Z', used: true, run: { runId: 300 }, reason: null });
+        const used = { GITHUB_STEP_SUMMARY: at('timings-used.md') };
+        await main([...argv, '--store-status', at('status-used.json')], { ...quiet, env: used });
+        assert.match(fs.readFileSync(at('timings-used.md'), 'utf8'),
+            /1 of 7 result\(s\) were scanned in this run \(1\.0 min\), 6 came from earlier runs\. Earlier results: run 300\./);
+
+        write(at('status-cold.json'), { format: 1, startedAt: '2026-10-26T09:00:00Z', used: false, run: null,
+            reason: 'none', detail: {}, repository: 'owner/product' });
+        const cold = { GITHUB_STEP_SUMMARY: at('timings-cold.md') };
+        await main([...argv, '--store-status', at('status-cold.json')], { ...quiet, env: cold });
+        assert.match(fs.readFileSync(at('timings-cold.md'), 'utf8'),
+            /7 of 7 result\(s\) were scanned in this run .* \*\*No earlier results were used:\*\* no earlier scan results were found/);
+
+        // A status that is not there only leaves the line out.
+        const none = { GITHUB_STEP_SUMMARY: at('timings-none.md') };
+        await main([...argv, '--store-status', at('no-status.json')], { ...quiet, env: none });
+        assert.doesNotMatch(fs.readFileSync(at('timings-none.md'), 'utf8'), /scanned in this run/);
+    });
+
     it('check: passes a clean scan, fails one where a file timed out', async () => {
         await main(['check', '--scanner-dir', at('scanner'), '--managers', at('managers.txt')], quiet);
         const npm = read(at('scanner', 'NPM', 'scan-result.json'));

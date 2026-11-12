@@ -33,6 +33,13 @@ import { checkManagerName } from './ort-result.mjs';
 /** Where the container sees the cached ORT storages (the job's cache/ folder). */
 export const STORAGE_ROOT = '/work/cache';
 
+/**
+ * ScanCode's options that change its findings (ORT's "commandLine"). Stored
+ * results made with other options are not reused, by ORT and by the store of
+ * earlier results (store.mjs), which names this as the reason.
+ */
+export const SCANCODE_OPTIONS = '--copyright,--license,--info,--strip-root,--timeout,600';
+
 /** The four ORT storages kept between runs, as folders below STORAGE_ROOT. */
 export const STORAGE_DIRS = Object.freeze({
     scanResults: 'scan-results',
@@ -77,7 +84,8 @@ function localFileStorage(directory, indent) {
  *   options do not change the findings, so stored results stay valid.
  * - All four storages live under STORAGE_ROOT: scan results, file lists,
  *   resolved provenances and the licence-file archive. Kept between runs
- *   and handed from the shards to the merge job; without the file lists
+ *   (the "ort-store" artifact, store.mjs) and handed from the shards to
+ *   the merge job; without the file lists
  *   and the archive the merge job would download every package again.
  */
 export function ortConfigYaml({ manager = null, storageRoot = STORAGE_ROOT, processes = 4 } = {}) {
@@ -108,7 +116,7 @@ export function ortConfigYaml({ manager = null, storageRoot = STORAGE_ROOT, proc
         '    config:',
         '      ScanCode:',
         '        options:',
-        "          commandLine: '--copyright,--license,--info,--strip-root,--timeout,600'",
+        `          commandLine: '${SCANCODE_OPTIONS}'`,
         `          commandLineNonConfig: '--processes,${processes}'`,
         '    storages:',
         '      local:',

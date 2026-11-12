@@ -292,11 +292,19 @@ const minutes = (seconds) => `${(seconds / 60).toFixed(1)} min`;
 //**************************************************************
 // renderPlanSummary
 //**************************************************************
-/** The plan as Markdown, for the job summary. */
-export function renderPlanSummary(plan) {
+/**
+ * The plan as Markdown, for the job summary. `earlier`: whether earlier
+ * results were used. Then a plan where most units are still new says so:
+ * a store was there, yet this scan is long (say, many updated
+ * dependencies). Without earlier results the store summary has already
+ * said why everything is scanned.
+ */
+export function renderPlanSummary(plan, { earlier = false } = {}) {
     const bases = {};
     for (const unit of plan.units) bases[unit.basis] = (bases[unit.basis] ?? 0) + 1;
     const longest = [...plan.units].sort(compareUnits).slice(0, 5);
+    const newUnits = plan.units.length - (bases.stored ?? 0);
+    const mostlyNew = earlier && plan.units.length > 0 && newUnits * 2 > plan.units.length;
     const lines = [
         '## Scan plan',
         '',
@@ -306,6 +314,10 @@ export function renderPlanSummary(plan) {
         '',
         `Estimates: ${Object.entries(bases).sort().map(([b, n]) => `${n} ${b}`).join(', ') || 'none'}.`,
         '',
+        ...(mostlyNew
+            ? [`**Most of this scan is new work:** ${newUnits} of ${plan.units.length} units are not in the earlier`
+                + ' results (for example many new or updated dependencies).', '']
+            : []),
         '| Shard | Units | Estimate |',
         '|---:|---:|---:|',
         ...plan.shards.map((s) => `| ${s.index} | ${s.unitCount} | ${minutes(s.seconds)} |`),

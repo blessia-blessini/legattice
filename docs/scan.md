@@ -75,17 +75,50 @@ every result the shards stored, and scans by itself anything that is missing —
 or ran out of time. Its job summary says how many pieces that were.
 
 **An incomplete scan fails.** ScanCode may spend 10 minutes on one file. If a file still runs out of
-time, or ScanCode reports any other error, the merge job fails and its results are not cached.
+time, or ScanCode reports any other error, the merge job fails and its results are not kept.
 
 ## What is kept between runs
 
-| Kept                                                            | Where                                              | For                                         |
-| --------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
-| scan results, file lists, licence-file archive, package origins | GitHub cache `ort-scan-<ORT version>-…`            | a piece scanned once is never scanned again |
-| how long each piece took, and its size                          | GitHub cache `ort-timings-<ORT version>-…` (small) | better guesses next time                    |
+Every clean scan leaves one artifact behind, **`ort-store`**, and the next scan of the same
+repository takes it up — from any branch or tag. (A GitHub cache would not do: it belongs to the
+branch or tag that saved it, so every new release tag started empty.)
 
-A new ORT version starts with empty caches: its results might differ. Timings not seen for 180 days
-are dropped.
+| In `ort-store`                                                  | For                                                  |
+| --------------------------------------------------------------- | ---------------------------------------------------- |
+| `cache/`: scan results, file lists, licence-file archive, package origins | a piece scanned once is never scanned again |
+| `timings/`: how long each piece took, and its size              | better guesses next time                             |
+| `store.json`: the ORT version and ScanCode options that made it, and the run | deciding whether the results still fit  |
+
+The store holds everything its run knew: the store it started from plus what it scanned itself. A
+re-run of the same run replaces its store. GitHub keeps an artifact 90 days at most; timings not seen
+for 180 days are dropped.
+
+**Which store is used.** The broker asks GitHub for the newest `ort-store` of the repository and
+takes it only from a run of that repository started by a push, by hand or by schedule — never from a
+fork or a pull request, whose author could put anything in it. It checks at most the 10 newest. The
+shards and the merge job then download that same store, so all jobs work from one snapshot.
+
+### When everything is scanned again
+
+When no store can be used, the scan is much longer. The broker then puts a warning on the run
+("Full scan") and a section **Earlier scan results** in its job summary, naming the reason:
+
+| Reason                                    | What happened                                                                 |
+| ----------------------------------------- | ----------------------------------------------------------------------------- |
+| no earlier scan results were found        | the repository's first scan, or none was kept                                 |
+| the earlier scan results have expired     | no scan for more than 90 days                                                 |
+| … come from runs that are not trusted     | only stores of forks or pull requests, or none among the 10 newest from a trusted run |
+| … could not be looked up                  | the GitHub API failed; for a calling workflow, usually `actions: read` not granted |
+| … could not be downloaded                 | the store was found, but the download failed                                  |
+| … carry no `store.json` this version can read | a store of an older or newer format                                       |
+| … were made with ORT X                    | ORT was updated: its findings may differ, so nothing is reused (on purpose)   |
+| … were made with other ScanCode options   | an option that changes the findings was changed: nothing is reused (on purpose) |
+
+Short of that, the scan plan says **Most of this scan is new work** when a store was used yet more
+than half the pieces are new (for example many updated dependencies). The merge job's summary then
+says how many results this run scanned and how many came from earlier runs.
+
+A failed lookup or download never fails the scan: it only makes it slower.
 
 ## Called from a product's build
 
@@ -94,12 +127,18 @@ does). The workflow is a reusable one:
 
 ```yaml
 foss-scan:
+  permissions:
+    contents: read
+    actions: read   # find and download the store of earlier results
   uses: blessia-blessini/legattice/.github/workflows/scan.yml@main
   with:
     repository: blessia-blessini/lattice
     ref: ${{ github.sha }}
     block_at: medium
 ```
+
+**The caller must grant `actions: read`.** A called workflow cannot have more permissions than its
+caller; GitHub does not start it otherwise.
 
 The inputs are the ones of the manual run. `results_artifact` (output) names the artifact with the
 results, among them `topics/topics.md` and `topics/notice-additions.json`; it belongs to the calling
@@ -110,8 +149,10 @@ Differences from a run started here:
 
 - **Legattice's code and ledger come from `main` as it is when each job starts** — a re-run reads the
   decisions made in between. (Run here, it is the commit the run was started on.)
-- **The caches are the caller's**: GitHub keeps caches per repository, so the first call from a product
-  starts with empty ones and scans everything (up to ~30 min with 16 shards for Lattice).
+- **The store is the caller's**: the `ort-store` artifact belongs to the calling run, so a product's
+  first call finds none and scans everything (with 16 shards for Lattice, about 170 minutes of
+  scanning spread over them). Each later call takes up the store of the one before, also across
+  release tags.
 
 ## Code
 
@@ -121,6 +162,7 @@ Differences from a run started here:
 | `src/scan/plan.mjs`       | the guesses, the sharing out, the timings file                                                                                                                 |
 | `src/scan/sizes.mjs`      | asks the registries for archive sizes                                                                                                                          |
 | `src/scan/ort-config.mjs` | ORT's configuration, the same for every job                                                                                                                    |
+| `src/scan/store.mjs`      | the store of earlier results: which `ort-store` is trusted, whether it fits the scan, and the reason when everything is scanned again |
 | `src/scan/cli.mjs`        | the commands the workflow calls                                                                                                                                |
 
 Node 24, nothing installed besides it. Tests: `npm test` (or `node --test`).
